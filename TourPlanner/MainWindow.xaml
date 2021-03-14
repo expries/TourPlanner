@@ -4,11 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TourPlanner"
-        xmlns:viewModels="clr-namespace:TourPlanner.ViewModels"
         xmlns:views="clr-namespace:TourPlanner.Views"
+        xmlns:state="clr-namespace:TourPlanner.State"
+        xmlns:viewModels="clr-namespace:TourPlanner.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    
+        Title="MainWindow" Height="500" Width="800" MinHeight="250" MinWidth="400">
+
     <Window.Resources>
         <DataTemplate DataType="{x:Type viewModels:HomeViewModel}">
             <views:HomeView></views:HomeView>
@@ -17,8 +18,40 @@
             <views:RouteView></views:RouteView>
         </DataTemplate>
     </Window.Resources>
-    
+
     <Grid>
-        <ContentControl Content="{Binding CurrentViewModel}"></ContentControl>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40px"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <Grid Grid.Row="0" Background="Black">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="15"></ColumnDefinition>
+                <ColumnDefinition Width="70"></ColumnDefinition>
+                <ColumnDefinition Width="70"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="15"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+
+            <RadioButton 
+                Content="Home" 
+                Command="{Binding Navigator.UpdateCurrentViewModelCommand}" 
+                CommandParameter="{x:Static state:ViewType.Home}"
+                Grid.Column="1"
+                VerticalAlignment="Center" Foreground="White"/>
+            <RadioButton
+                Content="Route" 
+                Command="{Binding Navigator.UpdateCurrentViewModelCommand}" 
+                CommandParameter="{x:Static state:ViewType.Route}" 
+                Grid.Column="2"
+                VerticalAlignment="Center" Foreground="White"/>
+        </Grid>
+        
+        <ContentControl Grid.Row="1" Margin="10,15,10,10" Content="{Binding Navigator.CurrentViewModel}"/>
     </Grid>
+    
 </Window>

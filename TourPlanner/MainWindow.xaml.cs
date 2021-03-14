@@ -20,18 +20,22 @@ namespace TourPlanner
             ConfigureServices(services);
 
             var serviceProvider = services.BuildServiceProvider();
-            var navigator = serviceProvider.GetService<INavigator>();
-            DataContext = new MainViewModel(navigator);
+            DataContext = serviceProvider.GetService<MainViewModel>();
         }
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<INavigator, Navigator>();
+            services.AddScoped<MainViewModel, MainViewModel>();
             services.AddScoped<HomeViewModel, HomeViewModel>();
             services.AddScoped<RouteViewModel, RouteViewModel>();
+
             services.AddScoped<IViewModelFactory, ViewModelFactory>();
+            services.AddScoped<INavigator, Navigator>();
+
             services.AddScoped<IRouteRepository, RouteRepository>();
             services.AddScoped<IRouteService, RouteService>();
+            services.AddScoped<ILocationService, LocationService>();
+            services.AddScoped<ILocationRepository, LocationRepository>();
         }
     }
 }
