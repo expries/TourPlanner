@@ -1,28 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using Microsoft.Extensions.DependencyInjection;
+using TourPlanner.Factories;
+using TourPlanner.Repositories;
+using TourPlanner.Services;
+using TourPlanner.State;
+using TourPlanner.ViewModels;
 
 namespace TourPlanner
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
             InitializeComponent();
+
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+
+            var serviceProvider = services.BuildServiceProvider();
+            var navigator = serviceProvider.GetService<INavigator>();
+            DataContext = new MainViewModel(navigator);
+        }
+
+        private void ConfigureServices(IServiceCollection services)
+        {
+            services.AddScoped<INavigator, Navigator>();
+            services.AddScoped<HomeViewModel, HomeViewModel>();
+            services.AddScoped<RouteViewModel, RouteViewModel>();
+            services.AddScoped<IViewModelFactory, ViewModelFactory>();
+            services.AddScoped<IRouteRepository, RouteRepository>();
+            services.AddScoped<IRouteService, RouteService>();
         }
     }
 }
