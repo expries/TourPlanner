@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using TourPlanner.Models;
 using TourPlanner.Services;
 using TourPlanner.State;
 
@@ -6,42 +7,46 @@ namespace TourPlanner.ViewModels
 {
     public class HomeViewModel : ViewModelBase
     {
-        private string _inputFrom = string.Empty;
+        private readonly Tour _tour = new();
 
         public string InputFrom 
         {
-            get => _inputFrom;
-            set {
-                _inputFrom = value;
-                OnPropertyChanged(nameof(InputFrom));
-            }
+            get => _tour.From;
+            set => SetProperty(ref _tour.From, value);
         }
-
-        private string _inputTo = string.Empty;
 
         public string InputTo
         {
-            get => _inputTo;
-            set
-            {
-                _inputTo = value;
-                OnPropertyChanged(nameof(InputTo));
-            }
+            get => _tour.To; 
+            set => SetProperty(ref _tour.To, value);
+        }
+
+        public string Description
+        {
+            get => _tour.Description;
+            set => SetProperty(ref _tour.Description, value);
         }
 
         public ICommand SearchFromCommand { get; }
 
         public ICommand SearchToCommand { get; }
+        
+        public ICommand SaveTourCommand { get; }
+        
+        public ICommand LoadRoutePictureCommand { get; }
 
-        private ILocationService _locationService { get; }
+        private ILocationService LocationService { get; }
+        
+        private ITourService TourService { get; }
 
-        public HomeViewModel(ILocationService locationService)
+        public HomeViewModel(ILocationService locationService, ITourService tourService)
         {
-            _locationService = locationService;
+            LocationService = locationService;
+            TourService = tourService;
 
             SearchFromCommand = new RelayCommand(parameter =>
             {
-                _locationService.Search(InputFrom);
+                LocationService.Search(InputFrom);
             }, 
             parameter =>
             {
@@ -50,11 +55,29 @@ namespace TourPlanner.ViewModels
 
             SearchToCommand = new RelayCommand(parameter =>
             {
-                _locationService.Search(InputTo);
+                LocationService.Search(InputTo);
             },
             parameter =>
             {
                 return InputTo.Trim().Length >= 2;
+            });
+
+            SaveTourCommand = new RelayCommand(parameter =>
+            {
+                tourService.SaveRoute(_tour);
+            },
+            parameter =>
+            {
+                return InputTo.Trim().Length >= 2 && InputFrom.Trim().Length >= 2 && Description.Trim().Length >= 2;
+            });
+
+            LoadRoutePictureCommand = new RelayCommand(parameter =>
+            {
+                var picture= tourService.LoadRoutePicture(_tour);
+            },
+            paramter =>
+            {
+                return InputTo.Trim().Length >= 2 && InputFrom.Trim().Length >= 2;
             });
         }
     }

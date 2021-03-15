@@ -9,32 +9,62 @@
              d:DesignHeight="450" d:DesignWidth="800">
 
     <Grid Background="White">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="40px"/>
-            <ColumnDefinition MaxWidth="400" Width="*"/>
-            <ColumnDefinition Width="70px"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="40px"/>
-            <RowDefinition Height="40px"/>
+            <RowDefinition Height="80"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Label Content="Von:" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" Foreground="Black"/>
-        <Label Content="Bis:" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" Foreground="Black"/>
-        <TextBox 
-            Text="{Binding InputFrom, UpdateSourceTrigger=PropertyChanged}" 
-            Grid.Column="1" Grid.Row="0" Height="25" VerticalContentAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center"/>
-        <TextBox 
-            Text="{Binding InputTo, UpdateSourceTrigger=PropertyChanged}" 
-            Grid.Column="1" Grid.Row="1" Height="25" VerticalContentAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center"/>
-        <Button 
-            Content="Laden" 
-            Command="{Binding SearchFromCommand}"
-            Grid.Column="2" Grid.Row="0" Margin="10,0,10,0" Height="25"/>
-        <Button
-            Content="Laden" 
-            Command="{Binding SearchToCommand}"
-            Grid.Column="2" Grid.Row="1" Margin="10,0,10,0" Height="25"/>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="70"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40px"/>
+                <RowDefinition Height="40px"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label Content="Von:" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" Foreground="Black"/>
+            <Label Content="Bis:" Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" Foreground="Black"/>
+            <TextBox 
+                Text="{Binding InputFrom, UpdateSourceTrigger=PropertyChanged}" 
+                Grid.Column="1" Grid.Row="0" Height="25" VerticalContentAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            <TextBox 
+                Text="{Binding InputTo, UpdateSourceTrigger=PropertyChanged}" 
+                Grid.Column="1" Grid.Row="1" Height="25" VerticalContentAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center"/>
+            <Button 
+                Content="Laden" 
+                Command="{Binding SearchFromCommand}"
+                Grid.Column="2" Grid.Row="0" Margin="10,0,10,0" Height="25"/>
+            <Button
+                Content="Laden" 
+                Command="{Binding SearchToCommand}"
+                Grid.Column="2" Grid.Row="1" Margin="10,0,10,0" Height="25"/>
+        </Grid>
+        <Grid Grid.Row="1" Margin="0,5,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="120"/>
+                    <RowDefinition Height="35"/>
+                    <RowDefinition Height="35"/>
+                </Grid.RowDefinitions>
+                <Label Content="Beschreibung:" VerticalAlignment="Center" Grid.Row="0"/>
+                <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
+                         Height="85" VerticalAlignment="Top" Grid.Row="1" Margin="5,0,10,0"/>
+                <Button Content="Routenbild laden" 
+                        Command="{Binding LoadRoutePictureCommand}"
+                        Grid.Column="0" Grid.Row="2" VerticalAlignment="Top"  Margin="5,0,10,0" Height="25"/>
+                <Button Content="Tour speichern" 
+                        Command="{Binding SaveTourCommand}"
+                        Grid.Column="0" Grid.Row="3" VerticalAlignment="Top" Margin="5,0,10,0" Height="25"/>
+            </Grid>
+            <Image Grid.Column="1" Margin="15,15,15,15" Grid.Row="3" Source="/Views/alexandr-podvalny-n_Jb_d8O43Q-unsplash.jpg"/>
+        </Grid>
     </Grid>
 
 </UserControl>

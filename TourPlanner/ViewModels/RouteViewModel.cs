@@ -4,11 +4,11 @@ namespace TourPlanner.ViewModels
 {
     public class RouteViewModel : ViewModelBase
     {
-        private readonly IRouteService _routeService;
+        private readonly ITourService _tourService;
         
-        public RouteViewModel(IRouteService routeService)
+        public RouteViewModel(ITourService tourService)
         {
-            _routeService = routeService;
+            _tourService = tourService;
         }
     }
 }

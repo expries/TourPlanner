@@ -16,7 +16,7 @@ namespace TourPlanner.State
             
             UpdateCurrentViewModelCommand = new RelayCommand(parameter =>
             {
-                if (!(parameter is ViewType viewType))
+                if (parameter is not ViewType viewType)
                 {
                     return;
                 }

@@ -8,6 +8,11 @@ namespace TourPlanner.Services
     {
         private readonly ILocationRepository _locationRepository;
 
+        public LocationService(ILocationRepository locationRepository)
+        {
+            _locationRepository = locationRepository;
+        }
+        
         public List<string> Search(string query)
         {
             Debug.Print("Searching for location '" + query + "' ...");

@@ -8,7 +8,7 @@
         xmlns:state="clr-namespace:TourPlanner.State"
         xmlns:viewModels="clr-namespace:TourPlanner.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="800" MinHeight="250" MinWidth="400">
+        Title="MainWindow" Height="500" Width="800" MinHeight="420" MinWidth="400">
 
     <Window.Resources>
         <DataTemplate DataType="{x:Type viewModels:HomeViewModel}">

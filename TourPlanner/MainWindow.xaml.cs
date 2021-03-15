@@ -32,10 +32,10 @@ namespace TourPlanner
             services.AddScoped<IViewModelFactory, ViewModelFactory>();
             services.AddScoped<INavigator, Navigator>();
 
-            services.AddScoped<IRouteRepository, RouteRepository>();
-            services.AddScoped<IRouteService, RouteService>();
-            services.AddScoped<ILocationService, LocationService>();
+            services.AddScoped<ITourRepository, TourRepository>();
+            services.AddScoped<ITourService, TourService>();
             services.AddScoped<ILocationRepository, LocationRepository>();
+            services.AddScoped<ILocationService, LocationService>();
         }
     }
 }
