@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace TourPlanner.Views
+namespace TourPlanner.WPF.Views
 {
     /// <summary>
     /// Interaction logic for RouteView.xaml

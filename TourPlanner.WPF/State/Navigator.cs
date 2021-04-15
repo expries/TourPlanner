@@ -1,7 +1,7 @@
 ﻿using System.Windows.Input;
-using TourPlanner.ViewModels;
+using TourPlanner.WPF.ViewModels;
 
-namespace TourPlanner.State
+namespace TourPlanner.WPF.State
 {
     public class Navigator : ViewModelBase, INavigator
     {
@@ -11,23 +11,23 @@ namespace TourPlanner.State
 
         public Navigator(HomeViewModel homeViewModel, NewTourViewModel newTourViewModel)
         {
-            CurrentViewModel = homeViewModel;
-            
-            UpdateCurrentViewModelCommand = new RelayCommand(parameter =>
+            this.CurrentViewModel = homeViewModel;
+
+            this.UpdateCurrentViewModelCommand = new RelayCommand(parameter =>
             {
                 if (parameter is not ViewType viewType)
                 {
                     return;
                 }
 
-                CurrentViewModel = viewType switch
+                this.CurrentViewModel = viewType switch
                 {
                     ViewType.NewTour => newTourViewModel,
                     ViewType.Home    => homeViewModel,
-                    _                => CurrentViewModel
+                    _                => this.CurrentViewModel
                 };
 
-                OnPropertyChanged(nameof(CurrentViewModel));
+                OnPropertyChanged(nameof(this.CurrentViewModel));
             });
         }
     }

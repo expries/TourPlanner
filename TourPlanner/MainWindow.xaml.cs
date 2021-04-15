@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TourPlanner.Factories;
 using TourPlanner.Repositories;
 using TourPlanner.Services;
 using TourPlanner.State;
@@ -25,12 +24,11 @@ namespace TourPlanner
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<MainViewModel, MainViewModel>();
-            services.AddScoped<HomeViewModel, HomeViewModel>();
-            services.AddScoped<RouteViewModel, RouteViewModel>();
+            services.AddSingleton<MainViewModel>();
+            services.AddSingleton<NewTourViewModel>();
+            services.AddSingleton<HomeViewModel>();
 
-            services.AddScoped<IViewModelFactory, ViewModelFactory>();
-            services.AddScoped<INavigator, Navigator>();
+            services.AddSingleton<INavigator, Navigator>();
 
             services.AddScoped<ITourRepository, TourRepository>();
             services.AddScoped<ITourService, TourService>();

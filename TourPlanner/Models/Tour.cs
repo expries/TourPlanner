@@ -2,11 +2,11 @@
 {
     public class Tour
     {
-        public string From;
+        public string From { get; set; }
 
-        public string To;
+        public string To { get; set; }
 
-        public string Description;
+        public string Description { get; set; }
 
         public Tour()
         {

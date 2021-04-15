@@ -1,4 +1,4 @@
-﻿namespace TourPlanner.State
+﻿namespace TourPlanner.WPF.State
 {
     public enum ViewType
     {

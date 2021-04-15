@@ -1,31 +1,31 @@
 ﻿using System.Collections.Generic;
-using System.Windows.Media.Imaging;
+using System.Windows.Ink;
 using TourPlanner.Models;
 
 namespace TourPlanner.Repositories
 {
     public class TourRepository : ITourRepository
     {
-        private readonly List<Tour> _routes;
+        private readonly List<Tour> _tours;
 
         public TourRepository()
         {
-            _routes = new List<Tour>();
+            _tours = new List<Tour>
+            {
+                new Tour() { From = "Vienna", To = "New York", Description = "Left, Right, Right" },
+                new Tour() { From = "Vienna", To = "Graz", Description = "Right, Left, Left" },
+                new Tour() { From = "Vienna", To = "Vienna", Description = "Left, Left, Left, Left" }
+            };
         }
         
-        public List<Tour> GetRoutes()
+        public List<Tour> GetTours()
         {
-            return _routes;
+            return _tours;
         }
 
-        public void SaveRoute(Tour tour)
+        public void SaveTour(Tour tour)
         {
-            _routes.Add(tour);
-        }
-
-        public string LoadRoutePicture(Tour tour)
-        {
-            return string.Empty;
+            _tours.Add(tour);
         }
     }
 }

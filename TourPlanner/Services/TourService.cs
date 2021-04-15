@@ -15,17 +15,25 @@ namespace TourPlanner.Services
         
         public List<Tour> GetTours()
         {
-            return _tourRepository.GetRoutes();
-        }
-        
-        public void SaveRoute(Tour tour)
-        {
-            _tourRepository.SaveRoute(tour);
+            return _tourRepository.GetTours();
         }
 
-        public string LoadRoutePicture(Tour tour)
+        public List<Tour> FindTours(string query)
         {
-            return _tourRepository.LoadRoutePicture(tour);
+            var tours = _tourRepository.GetTours();
+
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return tours;
+            }
+
+            query = query.ToLower();
+            return tours.FindAll(tour => tour.From.ToLower().Contains(query) || tour.To.ToLower().Contains(query));
+        }
+
+        public void SaveTour(Tour tour)
+        {
+            _tourRepository.SaveTour(tour);
         }
     }
 }

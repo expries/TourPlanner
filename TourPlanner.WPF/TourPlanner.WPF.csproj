@@ -1,0 +1,58 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net5.0-windows</TargetFramework>
+        <UseWPF>true</UseWPF>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Page Update="Views\HomeView.xaml">
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Views\NewTourView.xaml">
+        <SubType>Designer</SubType>
+      </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Views\HomeView.xaml.cs">
+        <SubType>Code</SubType>
+        <DependentUpon>HomeView.xaml</DependentUpon>
+      </Compile>
+      <Compile Update="Views\HomeView.xaml.cs">
+        <SubType>Code</SubType>
+      </Compile>
+      <Compile Update="Views\NewTourView.xaml.cs">
+        <SubType>Code</SubType>
+        <DependentUpon>NewTourView.xaml</DependentUpon>
+      </Compile>
+      <Compile Update="Views\NewTourView.xaml.cs">
+        <SubType>Code</SubType>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Resource Include="Views\4k-wallpaper-afterglow-architecture-2834219.jpg" />
+      <Resource Include="Views\alexandr-podvalny-n_Jb_d8O43Q-unsplash.jpg" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0-preview.2.21154.6" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.1-beta2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TourPlanner.BL\TourPlanner.BL.csproj" />
+      <ProjectReference Include="..\TourPlanner.DAL\TourPlanner.DAL.csproj" />
+      <ProjectReference Include="..\TourPlanner.Domain\TourPlanner.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

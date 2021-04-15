@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace TourPlanner.ViewModels
+namespace TourPlanner.WPF.ViewModels
 {
     public class ViewModelBase : INotifyPropertyChanged
     {

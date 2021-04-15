@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net5.0;net5.0-windows</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\TourPlanner.DAL\TourPlanner.DAL.csproj" />
+      <ProjectReference Include="..\TourPlanner.Domain\TourPlanner.Domain.csproj" />
+    </ItemGroup>
+
+</Project>

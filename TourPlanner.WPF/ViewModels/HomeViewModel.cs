@@ -1,73 +1,73 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Input;
-using TourPlanner.Models;
-using TourPlanner.Services;
-using TourPlanner.State;
+using TourPlanner.BL.Services;
+using TourPlanner.WPF.State;
+using TourPlanner.Domain.Models;
 
-namespace TourPlanner.ViewModels
+namespace TourPlanner.WPF.ViewModels
 {
     public class HomeViewModel : ViewModelBase
     {
-        private List<Tour> _tourList = new();
+        private readonly ITourService _tourService;
+    
+        private List<Tour> _tourList = new List<Tour>();
 
-        private readonly TourLog _log = new();
+        private readonly TourLog _log = new TourLog();
 
         private string _searchText = string.Empty;
         
         private static bool TourIsSelected { get; set; }
 
-        private readonly ITourService _tourService;
-
         public List<Tour> TourList
         {
-            get => _tourList;
+            get => this._tourList;
             set
             {
-                _tourList = value;
+                this._tourList = value;
                 OnPropertyChanged();
             }
         }
 
         public string LogTimeFrom
         {
-            get => _log.TimeFrom;
+            get => this._log.TimeFrom;
             set
             {
-                _log.TimeFrom = value;
+                this._log.TimeFrom = value;
                 OnPropertyChanged();
             }
         }
 
         public string LogTimeTo
         {
-            get => _log.TimeTo;
+            get => this._log.TimeTo;
             set
             {
-                _log.TimeTo = value;
+                this._log.TimeTo = value;
                 OnPropertyChanged();
             }
         }
 
         public int LogDistance
         {
-            get => _log.Distance;
+            get => this._log.Distance;
             set
             {
-                _log.Distance = value;
+                this._log.Distance = value;
                 OnPropertyChanged();
             }
         }
 
         public string SearchText
         {
-            get => _searchText;
+            get => this._searchText;
             set
             {
-                _searchText = value;
+                this._searchText = value;
                 OnPropertyChanged();
-                Debug.Print("Search for tour '" + SearchText + "' was triggered.");
-                TourList = _tourService.FindTours(SearchText);
+                Debug.Print("Search for tour '" + this.SearchText + "' was triggered.");
+                this.TourList = this._tourService.FindTours(this.SearchText);
             }
         }
 
@@ -98,9 +98,9 @@ namespace TourPlanner.ViewModels
 
         private bool SaveTourLogCanExecute(object parameter)
         {
-            bool logTimeFromIsValid = !string.IsNullOrWhiteSpace(LogTimeFrom);
-            bool logTimeToIsValid = !string.IsNullOrWhiteSpace(LogTimeTo);
-            bool logDistanceIsValid = LogDistance >= 0;
+            bool logTimeFromIsValid = !string.IsNullOrWhiteSpace(this.LogTimeFrom);
+            bool logTimeToIsValid = !string.IsNullOrWhiteSpace(this.LogTimeTo);
+            bool logDistanceIsValid = this.LogDistance >= 0;
             return logTimeFromIsValid && logTimeToIsValid && logDistanceIsValid;
         }
 
@@ -111,34 +111,34 @@ namespace TourPlanner.ViewModels
 
         private void SearchTour(object parameter)
         {
-            Debug.Print("Search for tour '" + SearchText + "' was triggered.");
-            var tours = _tourService.GetTours();
+            Debug.Print("Search for tour '" + this.SearchText + "' was triggered.");
+            var tours = this._tourService.GetTours();
 
-            if (string.IsNullOrWhiteSpace(SearchText))
+            if (string.IsNullOrWhiteSpace(this.SearchText))
             {
-                TourList = tours;
+                this.TourList = tours;
                 return;
             }
 
-            TourList = tours.FindAll(tour => tour.From.Contains(SearchText) || tour.To.Contains(SearchText));
+            this.TourList = tours.FindAll(tour => tour.From.Contains(this.SearchText) || tour.To.Contains(this.SearchText));
         }
 
         private bool SearchTourCanExecute(object parameter)
         {
-            return !string.IsNullOrWhiteSpace(SearchText);
+            return !string.IsNullOrWhiteSpace(this.SearchText);
         }
 
         public HomeViewModel(ITourService tourService)
         {
-            _tourService = tourService;
-            TourList = _tourService.GetTours();
+            this._tourService = tourService;
+            this.TourList = this._tourService.GetTours();
             TourIsSelected = false;
 
-            EditTourLogCommand = new RelayCommand(EditTourLog, _ => TourIsSelected);
-            SaveTourLogCommand = new RelayCommand(SaveTourLog, SaveTourLogCanExecute);
-            DeleteTourLogCommand = new RelayCommand(DeleteTourLog, _ => TourIsSelected);
-            CreateReportCommand = new RelayCommand(CreateReport);
-            SearchToursCommand = new RelayCommand(SearchTour, SearchTourCanExecute);
+            this.EditTourLogCommand = new RelayCommand(EditTourLog, _ => TourIsSelected);
+            this.SaveTourLogCommand = new RelayCommand(SaveTourLog, SaveTourLogCanExecute);
+            this.DeleteTourLogCommand = new RelayCommand(DeleteTourLog, _ => TourIsSelected);
+            this.CreateReportCommand = new RelayCommand(CreateReport);
+            this.SearchToursCommand = new RelayCommand(SearchTour, SearchTourCanExecute);
         }
     }
 }

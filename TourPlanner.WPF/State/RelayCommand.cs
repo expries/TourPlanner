@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace TourPlanner.State
+namespace TourPlanner.WPF.State
 {
     public class RelayCommand : ICommand
     {
@@ -11,24 +11,24 @@ namespace TourPlanner.State
         
         public RelayCommand(Action<object> execute)
         {
-            _execute = execute;
-            _canExecute = null;
+            this._execute = execute;
+            this._canExecute = null;
         }
         
         public RelayCommand(Action<object> execute, Predicate<object> canExecute)
         {
-            _execute = execute;
-            _canExecute = canExecute;
+            this._execute = execute;
+            this._canExecute = canExecute;
         }
         
         public bool CanExecute(object? parameter)
         {
-            return _canExecute?.Invoke(parameter) ?? true;
+            return this._canExecute?.Invoke(parameter) ?? true;
         }
 
         public void Execute(object? parameter)
         {
-            _execute.Invoke(parameter);
+            this._execute.Invoke(parameter);
         }
 
         public event EventHandler? CanExecuteChanged

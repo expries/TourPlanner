@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using TourPlanner.Models;
+using TourPlanner.Domain.Models;
 
-namespace TourPlanner.Repositories
+namespace TourPlanner.DAL.Repositories
 {
     public interface ITourRepository
     {

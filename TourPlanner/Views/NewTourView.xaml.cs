@@ -3,11 +3,11 @@
 namespace TourPlanner.Views
 {
     /// <summary>
-    /// Interaction logic for RouteView.xaml
+    /// Interaction logic for HomeView.xaml
     /// </summary>
-    public partial class RouteView : UserControl
+    public partial class NewTourView : UserControl
     {
-        public RouteView()
+        public NewTourView()
         {
             InitializeComponent();
         }

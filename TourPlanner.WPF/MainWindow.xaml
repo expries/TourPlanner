@@ -1,12 +1,11 @@
-﻿<Window x:Class="TourPlanner.MainWindow"
+﻿<Window x:Class="TourPlanner.WPF.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:TourPlanner"
-        xmlns:views="clr-namespace:TourPlanner.Views"
-        xmlns:state="clr-namespace:TourPlanner.State"
-        xmlns:viewModels="clr-namespace:TourPlanner.ViewModels"
+        xmlns:viewModels="clr-namespace:TourPlanner.WPF.ViewModels"
+        xmlns:views="clr-namespace:TourPlanner.WPF.Views"
+        xmlns:state="clr-namespace:TourPlanner.WPF.State"
         mc:Ignorable="d"
         Title="Tour Planner" Height="500" Width="800" MinHeight="420" MinWidth="760">
 
@@ -45,6 +44,7 @@
                 CommandParameter="{x:Static state:ViewType.Home}" 
                 Grid.Column="2"
                 VerticalAlignment="Center" Foreground="White"/>
+            
             <RadioButton 
                 Content="Neue Tour" 
                 Command="{Binding Navigator.UpdateCurrentViewModelCommand}" 
@@ -61,7 +61,8 @@
             </Menu>
         </Grid>
 
-        <ContentControl Grid.Row="1" Margin="10,15,10,10" Content="{Binding Navigator.CurrentViewModel}"/>
+        <ContentControl Grid.Row="1" Margin="10,15,10,10" 
+                        Content="{Binding Navigator.CurrentViewModel}"/>
     </Grid>
     
 </Window>
