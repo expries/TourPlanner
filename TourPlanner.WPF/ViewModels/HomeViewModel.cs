@@ -1,6 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Net.Mime;
+using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using TourPlanner.BL.Services;
 using TourPlanner.WPF.State;
 using TourPlanner.Domain.Models;
@@ -10,7 +15,9 @@ namespace TourPlanner.WPF.ViewModels
     public class HomeViewModel : ViewModelBase
     {
         private readonly ITourService _tourService;
-    
+        
+        private readonly IMapService _mapService;
+
         private List<Tour> _tourList = new List<Tour>();
 
         private readonly TourLog _log = new TourLog();
@@ -18,6 +25,19 @@ namespace TourPlanner.WPF.ViewModels
         private string _searchText = string.Empty;
         
         private static bool TourIsSelected { get; set; }
+        
+        private Image _image;
+
+        public Image Image
+        {
+            get => this._image;
+            set
+            {
+                this._image = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         public List<Tour> TourList
         {
@@ -29,7 +49,7 @@ namespace TourPlanner.WPF.ViewModels
             }
         }
 
-        public string LogTimeFrom
+        public DateTime LogTimeFrom
         {
             get => this._log.TimeFrom;
             set
@@ -39,7 +59,7 @@ namespace TourPlanner.WPF.ViewModels
             }
         }
 
-        public string LogTimeTo
+        public DateTime LogTimeTo
         {
             get => this._log.TimeTo;
             set
@@ -51,10 +71,10 @@ namespace TourPlanner.WPF.ViewModels
 
         public int LogDistance
         {
-            get => this._log.Distance;
+            get => this._log.Rating;
             set
             {
-                this._log.Distance = value;
+                this._log.Rating = value;
                 OnPropertyChanged();
             }
         }
@@ -91,22 +111,23 @@ namespace TourPlanner.WPF.ViewModels
             Debug.Print("Delete tour was triggered.");
         }
 
-        private void SaveTourLog(object paramter)
+        private void SaveTourLog(object parameter)
         {
             Debug.Print("Save tour was triggered.");
         }
 
         private bool SaveTourLogCanExecute(object parameter)
         {
-            bool logTimeFromIsValid = !string.IsNullOrWhiteSpace(this.LogTimeFrom);
-            bool logTimeToIsValid = !string.IsNullOrWhiteSpace(this.LogTimeTo);
             bool logDistanceIsValid = this.LogDistance >= 0;
-            return logTimeFromIsValid && logTimeToIsValid && logDistanceIsValid;
+            return logDistanceIsValid;
         }
 
         private void CreateReport(object parameter)
         {
             Debug.Print("Create report was triggered.");
+            var locations = new List<string> { "Vienna|AT", "Graz|AT" };
+            byte[] image = this._mapService.GetImage(locations);
+            SetImage(image);
         }
 
         private void SearchTour(object parameter)
@@ -128,9 +149,23 @@ namespace TourPlanner.WPF.ViewModels
             return !string.IsNullOrWhiteSpace(this.SearchText);
         }
 
-        public HomeViewModel(ITourService tourService)
+        public void SetImage(byte[] imageData)
         {
+            var image = new BitmapImage();
+            image.BeginInit();
+            image.CreateOptions = BitmapCreateOptions.None;
+            image.CacheOption = BitmapCacheOption.Default;
+            image.StreamSource = new MemoryStream(imageData);
+            image.EndInit();
+            this.Image.Source = image;
+            OnPropertyChanged(nameof(this.Image));
+        }
+
+        public HomeViewModel(ITourService tourService, IMapService mapService)
+        {
+            this.Image = new Image();
             this._tourService = tourService;
+            this._mapService = mapService;
             this.TourList = this._tourService.GetTours();
             TourIsSelected = false;
 

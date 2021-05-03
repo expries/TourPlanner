@@ -10,12 +10,12 @@ namespace TourPlanner.BL.Services
     {
         private readonly ITourRepository _tourRepository;
 
-        private readonly ILocationRepository _locationRepository;
+        private readonly IMapRepository _mapRepository;
         
-        public TourService(ITourRepository tourRepository, ILocationRepository locationRepository)
+        public TourService(ITourRepository tourRepository, IMapRepository mapRepository)
         {
             this._tourRepository = tourRepository;
-            this._locationRepository = locationRepository;
+            this._mapRepository = mapRepository;
         }
         
         public List<Tour> GetTours()
@@ -36,27 +36,28 @@ namespace TourPlanner.BL.Services
             return tours.FindAll(tour => tour.From.ToLower().Contains(query) || tour.To.ToLower().Contains(query));;
         }
 
-        public void SaveTour(Tour tour)
+        public Tour SaveTour(Tour tour)
         {
-            var tourFromList = this._locationRepository.Find(tour.From);
-            string tourFrom = tourFromList.FirstOrDefault();
+            var fromLocations = this._mapRepository.FindLocation(tour.From);
+            string from = fromLocations.Select(x => x.Name).FirstOrDefault();
 
-            if (tourFrom is null)
+            if (from is null)
             {
                 throw new SystemException("There is no location with name ....");
             }
             
-            var tourToList = this._locationRepository.Find(tour.From);
-            string tourTo = tourToList.FirstOrDefault();
+            var toLocation = this._mapRepository.FindLocation(tour.To);
+            string to = toLocation.Select(x => x.Name).FirstOrDefault();
 
-            if (tourTo is null)
+            if (to is null)
             {
                 throw new SystemException("There is no location with name ....");
             }
 
-            tour.From = tourFrom;
-            tour.To = tourTo;
-            this._tourRepository.SaveTour(tour);
+            tour.From = from;
+            tour.To = to;
+            var newTour = this._tourRepository.SaveTour(tour);
+            return newTour;
         }
     }
 }

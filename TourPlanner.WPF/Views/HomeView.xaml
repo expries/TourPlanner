@@ -41,7 +41,7 @@
                             <RowDefinition Height="30"></RowDefinition>
                             <RowDefinition Height="*" MinHeight="100"></RowDefinition>
                         </Grid.RowDefinitions>
-                        <Image Grid.Row="0" Source="/Views/alexandr-podvalny-n_Jb_d8O43Q-unsplash.jpg"/>
+                        <Image Grid.Row="0" Source="{Binding Image.Source}"/>
                         <TextBlock Grid.Row="1" Margin="0,12,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2">Beschreibung:</TextBlock>
                         <TextBlock Grid.Row="2" Text="[*] Rechts abbiegen" TextWrapping="Wrap" Grid.ColumnSpan="2" Margin="0,15,0,0" Grid.RowSpan="2"/>
                     </Grid>

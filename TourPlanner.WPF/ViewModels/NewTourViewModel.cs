@@ -36,7 +36,7 @@ namespace TourPlanner.WPF.ViewModels
         
         public ICommand LoadRouteCommand { get; }
 
-        private ILocationService LocationService { get; }
+        private IMapService MapService { get; }
         
         private ITourService TourService { get; }
 
@@ -44,16 +44,16 @@ namespace TourPlanner.WPF.ViewModels
         
         private readonly Tour _tour = new Tour();
 
-        public NewTourViewModel(ILocationService locationService, ITourService tourService)
+        public NewTourViewModel(IMapService mapService, ITourService tourService)
         {
-            this.LocationService = locationService;
+            this.MapService = mapService;
             this.TourService = tourService;
             this.RouteInfoWasLoaded = false;
 
             this.SearchFromCommand = new RelayCommand(parameter =>
             {
                 Debug.Print("Search location (From) was triggered.");
-                this.LocationService.Search(this.InputFrom);
+                this.MapService.FindLocations(this.InputFrom);
             }, 
             parameter =>
             {
@@ -63,7 +63,7 @@ namespace TourPlanner.WPF.ViewModels
             this.SearchToCommand = new RelayCommand(parameter =>
             {
                 Debug.Print("Search location (To) was triggered.");
-                this.LocationService.Search(this.InputTo);
+                this.MapService.FindLocations(this.InputTo);
             },
             parameter =>
             {

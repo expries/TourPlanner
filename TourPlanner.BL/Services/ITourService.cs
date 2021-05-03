@@ -9,6 +9,6 @@ namespace TourPlanner.BL.Services
 
         public List<Tour> FindTours(string query);
 
-        public void SaveTour(Tour tour);
+        public Tour SaveTour(Tour tour);
     }
 }
