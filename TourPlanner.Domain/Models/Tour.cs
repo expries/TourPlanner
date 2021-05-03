@@ -5,40 +5,27 @@ namespace TourPlanner.Domain.Models
 {
     public class Tour
     {
+        [Column(Name="tourId")] 
+        public int TourId { get; set; }
+        
+        [Column(Name="name")]
+        public string Name { get; set; }
+        
+        [Column(Name="locationFrom")]
         public string From { get; set; }
 
+        [Column(Name="locationTo")]
         public string To { get; set; }
 
+        [Column(Name="description")]
         public string Description { get; set; }
-        
-        public List<TourLog> TourLogs => this.LazyTourLogs.Value;
 
-        private Lazy<List<TourLog>> LazyTourLogs { get; set; }
-        
-        private Func<Tour, List<TourLog>> TourLogGetter { get; set; }
+        [OneToMany(ForeignKey="fk_tourID", Table="tour_log")]
+        public Lazy<List<TourLog>> TourLogs { get; set; }
 
-        public Tour(Func<Tour, List<TourLog>> tourLogSource = null)
+        public Tour()
         {
-            this.From = string.Empty;
-            this.To = string.Empty;
-            this.Description = string.Empty;
-            this.TourLogGetter = tourLogSource ?? DefaultGetTours;
-            this.LazyTourLogs = new Lazy<List<TourLog>>(GetTourLogs);
-        }
-
-        private List<TourLog> GetTourLogs()
-        {
-            return this.TourLogGetter.Invoke(this);
-        }
-
-        private static List<TourLog> DefaultGetTours(Tour tour)
-        {
-            return new List<TourLog>
-            {
-                new TourLog { TimeFrom = "00", TimeTo = "11", Distance = 100 },
-                new TourLog { TimeFrom = "22", TimeTo = "33", Distance = 200 },
-                new TourLog { TimeFrom = "44", TimeTo = "55", Distance = 300 }
-            };
+            this.TourLogs = new Lazy<List<TourLog>>();
         }
     }
 }

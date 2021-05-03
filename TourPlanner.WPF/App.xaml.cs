@@ -22,9 +22,12 @@ namespace TourPlanner.WPF
             ConfigureServices(services);
             this._serviceProvider = services.BuildServiceProvider();
         }
-        
-        private void ConfigureServices(IServiceCollection services)
+
+        private static void ConfigureServices(IServiceCollection services)
         {
+            var configuration = GetConfiguration();
+            services.AddSingleton<IConfiguration>(_ => configuration);
+            
             services.AddSingleton<MainWindow>();
             services.AddSingleton<MainViewModel>();
             services.AddSingleton<NewTourViewModel>();
@@ -32,21 +35,23 @@ namespace TourPlanner.WPF
 
             services.AddSingleton<INavigator, Navigator>();
 
-            services.AddScoped<ITourRepository, TourRepository>();
-            services.AddScoped<ITourService, TourService>();
-            services.AddScoped<ILocationRepository, LocationRepository>();
-            services.AddScoped<ILocationService, LocationService>();
+            services.AddSingleton<ITourRepository, TourRepository>();
+            services.AddSingleton<IMapRepository, MapRepository>();
+            services.AddSingleton<ITourService, TourService>();
+            services.AddSingleton<IMapService, MapService>();
         }
-
-        private void OnStartUp(object sender, StartupEventArgs e)
+        
+        private static IConfigurationRoot GetConfiguration()
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json");
             
-            var configuration = builder.Build();
-            string connectionString = configuration.GetConnectionString("defaultConnectionString");
-            
+            return builder.Build();
+        }
+
+        private void OnStartUp(object sender, StartupEventArgs e)
+        {
             var mainWindow = this._serviceProvider.GetService<MainWindow>();
             mainWindow.Show();
         }

@@ -1,18 +1,22 @@
-﻿namespace TourPlanner.Domain.Models
+﻿using System;
+
+namespace TourPlanner.Domain.Models
 {
     public class TourLog
     {
-        public string TimeFrom;
+        [Column(Name="tourLogId")]
+        public int TourLogId { get; set; }
+        
+        [Column(Name="startTime")]
+        public DateTime TimeFrom { get; set; }
 
-        public string TimeTo;
+        [Column(Name="endTime")]
+        public DateTime TimeTo { get; set; }
 
-        public int Distance;
+        [Column(Name="rating")] 
+        public int Rating { get; set; }
 
-        public TourLog()
-        {
-            this.TimeFrom = string.Empty;
-            this.TimeTo = string.Empty;
-            this.Distance = 0;
-        }
+        [ManyToOne(ForeignKey="fk_tourId", Table="tour", PrimaryKey="tourID")]
+        public Lazy<Tour> Tour { get; set; }
     }
 }
