@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
+using TourPlanner.Domain;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.DAL.Repositories
@@ -39,42 +40,56 @@ namespace TourPlanner.DAL.Repositories
         {
             var savedTour = GetTour(tour.TourId);
 
-            if (savedTour.Equals(tour))
+            if (savedTour is not null && savedTour.Equals(tour))
             {
                 return savedTour;
             }
 
-            DeleteTour(tour);
+            if (savedTour is not null)
+            {
+                DeleteTour(tour);
+            }
+
             return CreateTour(tour);
         }
 
-        public Tour CreateTour(Tour tour)
+        private Tour CreateTour(Tour tour)
         { 
-            const string sql = "INSERT INTO tour (tourId, name, locationFrom, locationTo, description) " +
-                                "VALUES (@Id, @Name, @From, @To, @Description)";
+            const string sql = "INSERT INTO tour (name, locationFrom, locationTo, description, distance, tourType, imagePath) " +
+                                "VALUES (@Name, @From, @To, @Description, @Distance, @TourType, @ImagePath)";
 
             this._connection.Execute(sql, new
             {
-                Id = tour.TourId, 
                 Name = tour.Name, 
                 From = tour.From, 
                 To = tour.To, 
-                Description = tour.Description
+                Description = tour.Description,
+                Distance = tour.Distance,
+                TourType = tour.Type,
+                ImagePath = tour.ImagePath
             });
 
             var tourLogs = tour.TourLogs.Value.Select(CreateTourLog).ToList();
             tour.TourLogs = new Lazy<List<TourLog>>(tourLogs);
+            tour.TourId = GetLatestId();
+            
             return tour;
+        }
+
+        private int GetLatestId()
+        {
+            const string sql = "SELECT tourId FROM tour ORDER BY tourId DESC LIMIT 1;";
+            var tour = this._connection.QueryFirstOrDefault<Tour>(sql);
+            return tour.TourId;
         }
 
         private TourLog CreateTourLog(TourLog tourLog)
         {
-            const string sql = "INSERT INTO tour_log (tourLogId, startTime, endTime, rating, fk_tourId) " +
-                               "VALUES (@Id, @TimeStart, @TimeEnd, @Rating, @TourId)";
+            const string sql = "INSERT INTO tour_log (startTime, endTime, rating, fk_tourId) " +
+                               "VALUES (@TimeStart, @TimeEnd, @Rating, @TourId)";
 
             this._connection.Execute(sql, new
             {
-                Id = tourLog.TourLogId,
                 TimeStart = tourLog.TimeFrom,
                 TimeEnd = tourLog.TimeTo,
                 Rating = tourLog.Rating,

@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Npgsql;
 using TourPlanner.Domain;
 
-namespace TourPlanner.DAL
+namespace TourPlannerTestDemo
 {
     /// <summary>
     /// Performs sql statements on postgres database and performs mapping of query results to entities.
     /// </summary>
     public class DatabaseConnection
     {
-        private NpgsqlConnection Connection { get; set; }
+        private NpgsqlConnection Connection { get; }
         
         private string ConnectionString { get; set; }
         
@@ -22,17 +21,9 @@ namespace TourPlanner.DAL
 
         public DatabaseConnection(string connectionString)
         {
+            this.Connection = new NpgsqlConnection(connectionString);
+            this.Connection.Open();
             this.ConnectionString = connectionString;
-        }
-
-        /// <summary>
-        /// Map enum type to name of enum type of database
-        /// </summary>
-        /// <param name="name"></param>
-        /// <typeparam name="TEnum"></typeparam>
-        public static void MapEnum<TEnum>(string name) where TEnum : struct, Enum
-        {
-            NpgsqlConnection.GlobalTypeMapper.MapEnum<TEnum>(name);
         }
         
         /// <summary>
@@ -66,15 +57,8 @@ namespace TourPlanner.DAL
         /// <returns></returns>
         public int Execute(NpgsqlCommand cmd)
         {
-            this.Connection = new NpgsqlConnection(this.ConnectionString);
-            this.Connection.Open();
-
-            Debug.Print(cmd.CommandText);
             cmd.Connection = Connection;
-            var result = cmd.ExecuteNonQuery();
-
-            this.Connection.Close();
-            return result;
+            return cmd.ExecuteNonQuery();
         }
         
         /// <summary>
@@ -113,16 +97,11 @@ namespace TourPlanner.DAL
         /// <returns></returns>
         public List<T> Query<T>(NpgsqlCommand cmd, int limit = 100) where T : new()
         {
-            this.Connection = new NpgsqlConnection(this.ConnectionString);
-            this.Connection.Open();
-
-            Debug.Print(cmd.CommandText);
             cmd.Connection = this.Connection;
+            Console.WriteLine(cmd.CommandText);
             this._reader = cmd.ExecuteReader(CommandBehavior.KeyInfo);
             var records = GetRecords<T>(limit);
-
             this._reader.Close();
-            this.Connection.Close();
             return records;
         }
         
@@ -136,9 +115,7 @@ namespace TourPlanner.DAL
         public T QueryFirstOrDefault<T>(string sql, int limit = 100) where T : new()
         {
             var cmd = new NpgsqlCommand(sql);
-            var result = QueryFirstOrDefault<T>(cmd, limit);
-            return result;
-
+            return QueryFirstOrDefault<T>(cmd, limit);
         }
         
         /// <summary>
@@ -164,16 +141,11 @@ namespace TourPlanner.DAL
         /// <returns></returns>
         public T QueryFirstOrDefault<T>(NpgsqlCommand cmd, int limit = 100) where T : new()
         {
-            this.Connection = new NpgsqlConnection(this.ConnectionString);
-            this.Connection.Open();
-
-            Debug.Print(cmd.CommandText);
             cmd.Connection = this.Connection;
+            Console.WriteLine(cmd.CommandText);
             this._reader = cmd.ExecuteReader(CommandBehavior.KeyInfo);
             var record = GetNextRecord<T>(limit);
-
             this._reader.Close();
-            this.Connection.Close();
             return record;
         }
 
@@ -213,7 +185,7 @@ namespace TourPlanner.DAL
             {
                 return default;
             }
-
+            
             // read current result row
             var currentRow = GetRow();
             var properties = typeof(T).GetProperties().Where(x => x.CanWrite);
@@ -263,8 +235,7 @@ namespace TourPlanner.DAL
 
             if (currentRow.ContainsKey(columnName))
             {
-                var value = currentRow[columnName] is DBNull ? default : currentRow[columnName];
-                property.SetValue(record, value);
+                property.SetValue(record, currentRow[columnName]);
             }
 
         }
@@ -293,7 +264,7 @@ namespace TourPlanner.DAL
             {
                 nestedType = nestedType.GenericTypeArguments.FirstOrDefault() ?? nestedType;
             }
-
+            
             // find the primary key column
             var schema = this._reader.GetColumnSchema();
             var keyColumn = schema.FirstOrDefault(x => x?.IsKey ?? false);
@@ -408,7 +379,7 @@ namespace TourPlanner.DAL
                 {
                     continue;
                 }
-
+                
                 int ordinal = column.ColumnOrdinal.Value;
                 var value = this._reader.GetValue(ordinal);
                 string columnName = column.ColumnName.ToLower();

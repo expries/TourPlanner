@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using TourPlanner.DAL.Requests;
 
@@ -17,12 +18,13 @@ namespace TourPlanner.DAL.Repositories
             this._baseUrl = api.GetValue<string>("baseUrl");
         }
         
-        public List<LocationResult> FindLocation(string query)
+        public LocationResponse FindLocation(string locationFrom, string locationTo)
         {
-            string url = $"{this._baseUrl}/search/v4/place?sort=relevance&feedback=false&key={this._apiKey}&q={query}";
-            var locationResponse = HttpConnection.Get<LocationResponse>(url);
-            var locations = locationResponse.Results;
-            return locations;
+            string url = $"{this._baseUrl}/directions/v2/route?key={this._apiKey}&ambiguities=check";
+            var request = new DirectionRequest();
+            request.Locations = new List<string> { locationFrom, locationTo };
+            var response = HttpConnection.Post<LocationResponse>(url, request);
+            return response;
         }
 
         public DirectionResponse GetDirection(string locationFrom, string locationTo)
@@ -34,11 +36,11 @@ namespace TourPlanner.DAL.Repositories
             return response;
         }
 
-        public byte[] GetImage(List<string> locations, int width = 400, int height = 200)
+        public byte[] GetImage(string sessionId, BoundingBox boundingBox, int width = 400, int height = 200)
         {
-            string locationString = string.Join("||", locations);
-            string url = $"{this._baseUrl}/staticmap/v5/map?locations={locationString}&size={width},{height}@2x&key={this._apiKey}";
-            byte[] response = HttpConnection.GetBytes(url);
+            string boundingBoxString = $"{boundingBox.Lr.ToString()},{boundingBox.Ul.ToString()}";
+            string url = $"{this._baseUrl}/staticmap/v5/map?session={sessionId}&boundingBox={boundingBoxString}&size={width},{height}@2x&key={this._apiKey}";
+            var response = HttpConnection.GetBytes(url);
             return response;
         }
     }

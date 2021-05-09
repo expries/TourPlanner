@@ -7,6 +7,58 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove=".png.png" />
+      <None Remove=".png_2.jpg" />
+      <None Remove="logo.png" />
+      <None Remove="new-tour_icon.png" />
+      <None Remove="Resources\3_dots.png" />
+      <None Remove="Resources\3_dots_horizontal.png" />
+      <None Remove="Resources\close.png" />
+      <None Remove="Resources\logo.png" />
+      <None Remove="Resources\maximize.png" />
+      <None Remove="Resources\minimize.png" />
+      <None Remove="Resources\new-tour_icon.png" />
+      <None Remove="Resources\tours_icon.png" />
+      <None Remove="slice1.png" />
+      <None Remove="tours_icon.png" />
+      <None Remove="tours_icon.webp" />
+      <None Remove="tours_icon_0.png" />
+      <None Remove="Untitle1d.png" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="Resources\3_dots.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Resource Include="Resources\3_dots_horizontal.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <Resource Include="Resources\close.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Resource>
+      <Content Include="Resources\logo.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="Resources\minimize.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="Resources\new-tour_icon.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+      <Content Include="Resources\tours_icon.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="Views\NavbarView - Copy.xaml">
+        <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
+      <Page Update="Views\NavbarView.xaml">
+        <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
       <Page Update="Views\HomeView.xaml">
         <SubType>Designer</SubType>
       </Page>
@@ -23,6 +75,9 @@
       <Compile Update="Views\HomeView.xaml.cs">
         <SubType>Code</SubType>
       </Compile>
+      <Compile Update="Views\NavbarView - Copy.xaml.cs">
+        <DependentUpon>NavbarView.xaml.cs</DependentUpon>
+      </Compile>
       <Compile Update="Views\NewTourView.xaml.cs">
         <SubType>Code</SubType>
         <DependentUpon>NewTourView.xaml</DependentUpon>
@@ -33,8 +88,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Resource Include="Views\4k-wallpaper-afterglow-architecture-2834219.jpg" />
-      <Resource Include="Views\alexandr-podvalny-n_Jb_d8O43Q-unsplash.jpg" />
+      <Content Include="Resources\maximize.png">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
     
     <ItemGroup>

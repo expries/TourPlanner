@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Mime;
+using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using TourPlanner.BL.Services;
 using TourPlanner.WPF.State;
@@ -18,26 +18,31 @@ namespace TourPlanner.WPF.ViewModels
         
         private readonly IMapService _mapService;
 
+        // backing fields
+        
         private List<Tour> _tourList = new List<Tour>();
 
-        private readonly TourLog _log = new TourLog();
-
         private string _searchText = string.Empty;
-        
-        private static bool TourIsSelected { get; set; }
-        
-        private Image _image;
 
-        public Image Image
+        private bool TourIsSelected => this._currentTour != null;
+        
+        private Image _image = new Image();
+
+        private Tour _currentTour;
+
+        // public properties
+        
+        public INavigator Navigator => State.Navigator.Instance;
+
+        public ImageSource Image
         {
-            get => this._image;
+            get => this._image.Source;
             set
             {
-                this._image = value;
+                this._image.Source = value;
                 OnPropertyChanged();
             }
         }
-
 
         public List<Tour> TourList
         {
@@ -49,36 +54,6 @@ namespace TourPlanner.WPF.ViewModels
             }
         }
 
-        public DateTime LogTimeFrom
-        {
-            get => this._log.TimeFrom;
-            set
-            {
-                this._log.TimeFrom = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public DateTime LogTimeTo
-        {
-            get => this._log.TimeTo;
-            set
-            {
-                this._log.TimeTo = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public int LogDistance
-        {
-            get => this._log.Rating;
-            set
-            {
-                this._log.Rating = value;
-                OnPropertyChanged();
-            }
-        }
-
         public string SearchText
         {
             get => this._searchText;
@@ -86,21 +61,94 @@ namespace TourPlanner.WPF.ViewModels
             {
                 this._searchText = value;
                 OnPropertyChanged();
-                Debug.Print("Search for tour '" + this.SearchText + "' was triggered.");
-                this.TourList = this._tourService.FindTours(this.SearchText);
+                SearchTour(value);
             }
         }
 
-        public ICommand DeleteTourLogCommand { get; set; }
+        public Tour CurrentTour
+        {
+            get => this._currentTour;
+            set
+            {
+                this._currentTour = value;
+                OnPropertyChanged();
+            }
+        }
 
-        public ICommand EditTourLogCommand { get; set; }
+        // public commands
+        
+        public ICommand DeleteTourLogCommand { get; }
 
-        public ICommand SaveTourLogCommand { get; set; }
+        public ICommand EditTourLogCommand { get; }
+
+        public ICommand SaveTourLogCommand { get; }
 
         public ICommand CreateReportCommand { get; }
 
-        public ICommand SearchToursCommand { get; }
+        public ICommand SelectTourCommand { get; }
+        
+        public ICommand UpdateCurrentTourCommand { get; }
+        
+        public ICommand DeleteCurrentTourCommand { get; }
 
+        public HomeViewModel(ITourService tourService, IMapService mapService)
+        {
+            this._tourService = tourService;
+            this._mapService = mapService;
+
+            this.EditTourLogCommand = new RelayCommand(EditTourLog, _ => this.TourIsSelected);
+            this.SaveTourLogCommand = new RelayCommand(SaveTourLog);
+            this.DeleteTourLogCommand = new RelayCommand(DeleteTourLog, _ => this.TourIsSelected);
+            this.CreateReportCommand = new RelayCommand(CreateReport);
+            this.SelectTourCommand = new RelayCommand(SelectTour);
+            this.DeleteCurrentTourCommand = new RelayCommand(DeleteTour, _ => this.TourIsSelected);
+            this.UpdateCurrentTourCommand = new RelayCommand(UpdateCurrentTour, _ => this.TourIsSelected);
+        }
+
+        public override void OnNavigation(object context)
+        {
+            this._searchText = string.Empty;
+            LoadTours();
+            SelectTour(context);
+        }
+
+        private void SearchTour(string parameter)
+        {
+            Debug.Print("Search for tour '" + this.SearchText + "' was triggered.");
+            this.TourList = this._tourService.FindTours(parameter);
+        }
+
+        private void SelectTour(object parameter)
+        {
+            if (parameter is not Tour tour)
+            {
+                return;
+            }
+            
+            Debug.Print("Selecting tour with name " + tour.Name);
+            this.CurrentTour = tour;
+            SetImage(this.CurrentTour.Image);
+        }
+
+        private void UpdateCurrentTour(object parameter)
+        {
+            this.Context = this.CurrentTour;
+            this.Navigator.UpdateCurrentViewModelCommand.Execute(ViewType.NewTour);
+            this.Context = null;
+        }
+
+        private async void DeleteTour(object parameter)
+        {
+            await this._tourService.DeleteTourAsync(this.CurrentTour);
+            this.CurrentTour = null;
+            LoadTours();
+        }
+        
+        private void CreateReport(object parameter)
+        {
+            Debug.Print("Create report was triggered.");
+        }
+        
         private void EditTourLog(object parameter)
         {
             Debug.Print("Edit tour was triggered.");
@@ -116,40 +164,12 @@ namespace TourPlanner.WPF.ViewModels
             Debug.Print("Save tour was triggered.");
         }
 
-        private bool SaveTourLogCanExecute(object parameter)
+        private async void LoadTours()
         {
-            bool logDistanceIsValid = this.LogDistance >= 0;
-            return logDistanceIsValid;
+            this.TourList = await this._tourService.GetToursAsync();
         }
 
-        private void CreateReport(object parameter)
-        {
-            Debug.Print("Create report was triggered.");
-            var locations = new List<string> { "Vienna|AT", "Graz|AT" };
-            byte[] image = this._mapService.GetImage(locations);
-            SetImage(image);
-        }
-
-        private void SearchTour(object parameter)
-        {
-            Debug.Print("Search for tour '" + this.SearchText + "' was triggered.");
-            var tours = this._tourService.GetTours();
-
-            if (string.IsNullOrWhiteSpace(this.SearchText))
-            {
-                this.TourList = tours;
-                return;
-            }
-
-            this.TourList = tours.FindAll(tour => tour.From.Contains(this.SearchText) || tour.To.Contains(this.SearchText));
-        }
-
-        private bool SearchTourCanExecute(object parameter)
-        {
-            return !string.IsNullOrWhiteSpace(this.SearchText);
-        }
-
-        public void SetImage(byte[] imageData)
+        private void SetImage(byte[] imageData)
         {
             var image = new BitmapImage();
             image.BeginInit();
@@ -157,23 +177,7 @@ namespace TourPlanner.WPF.ViewModels
             image.CacheOption = BitmapCacheOption.Default;
             image.StreamSource = new MemoryStream(imageData);
             image.EndInit();
-            this.Image.Source = image;
-            OnPropertyChanged(nameof(this.Image));
-        }
-
-        public HomeViewModel(ITourService tourService, IMapService mapService)
-        {
-            this.Image = new Image();
-            this._tourService = tourService;
-            this._mapService = mapService;
-            this.TourList = this._tourService.GetTours();
-            TourIsSelected = false;
-
-            this.EditTourLogCommand = new RelayCommand(EditTourLog, _ => TourIsSelected);
-            this.SaveTourLogCommand = new RelayCommand(SaveTourLog, SaveTourLogCanExecute);
-            this.DeleteTourLogCommand = new RelayCommand(DeleteTourLog, _ => TourIsSelected);
-            this.CreateReportCommand = new RelayCommand(CreateReport);
-            this.SearchToursCommand = new RelayCommand(SearchTour, SearchTourCanExecute);
+            this.Image = image;
         }
     }
 }

@@ -3,98 +3,415 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:view="clr-namespace:TourPlanner.WPF.Views"
+             xmlns:models="clr-namespace:TourPlanner.Domain.Models;assembly=TourPlanner.Domain"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
-    <Grid Margin="0,0,0,10">
+    <UserControl.Resources>
+
+    </UserControl.Resources>
+
+
+    <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition MinWidth="150" Width="1*"></ColumnDefinition>
-            <ColumnDefinition MinWidth="150" Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <Grid Grid.Column="0">
+        <Grid 
+            Grid.Column="0" 
+            Background="{DynamicResource GrayBlueBackground}">
+            
             <Grid.RowDefinitions>
-                <RowDefinition Height="55"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="180" />
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBox Grid.Row="0" Height="26" TextWrapping="Wrap" VerticalAlignment="Center"
-                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
-            <DataGrid AutoGenerateColumns="False" Grid.Row="1" ItemsSource="{Binding TourList}">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Track Title" Binding="{Binding From}" />
-                    <DataGridTextColumn Header="Track Title" Binding="{Binding To}" />
-                </DataGrid.Columns>
-            </DataGrid>
+            <Grid 
+                Grid.Row="0" 
+                Margin="20 60 20 20" 
+                Background="Transparent">
+                
+                <TextBlock
+                    FontSize="20"
+                    FontWeight="Medium"
+                    Text="Touren" />
+
+                <TextBox 
+                    x:Name="TourSearchBox"
+                    Height="40" 
+                    VerticalAlignment="Bottom"
+                    BorderBrush="Transparent"
+                    FontSize="14"
+                    FontWeight="Regular"
+                    Padding="9 10 0 5"
+                    Foreground="Black"
+                    Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=250}">
+
+                    <TextBox.Resources>
+                        <Style TargetType="{x:Type Border}">
+                            <Setter Property="CornerRadius" Value="5"></Setter>
+                        </Style>
+                    </TextBox.Resources>
+
+                </TextBox>
+
+                <TextBlock 
+                    IsHitTestVisible="False" 
+                    VerticalAlignment="Bottom"
+                    FontSize="14"
+                    FontWeight="Regular"
+                    Padding="12 12 0 5"
+                    Height="40"
+                    Foreground="DarkGray"
+                    Text="Suche">
+                    
+                    <TextBlock.Style>
+                        <Style TargetType="{x:Type TextBlock}">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=TourSearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+
+            </Grid>
+
+            <Grid Grid.Row="1" HorizontalAlignment="Center">
+                <view:SidebarView />
+            </Grid>
         </Grid>
 
-        <Grid Grid.Column="1" Margin="10,0,10,0">
+        <Grid Grid.Column="1"
+              Margin="25 60 25 20">
+            
             <Grid.RowDefinitions>
-                <RowDefinition Height="*" MinHeight="200"></RowDefinition>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TabControl Grid.Row="0">
-                <TabItem Header="Route">
-                    <Grid Margin="15,10,15,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="3*" MinHeight="150"></RowDefinition>
-                            <RowDefinition Height="30"></RowDefinition>
-                            <RowDefinition Height="*" MinHeight="100"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Image Grid.Row="0" Source="{Binding Image.Source}"/>
-                        <TextBlock Grid.Row="1" Margin="0,12,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2">Beschreibung:</TextBlock>
-                        <TextBlock Grid.Row="2" Text="[*] Rechts abbiegen" TextWrapping="Wrap" Grid.ColumnSpan="2" Margin="0,15,0,0" Grid.RowSpan="2"/>
-                    </Grid>
-                </TabItem>
-                <TabItem Header="Historie">
+            <TextBlock 
+                Grid.Row="0" 
+                FontSize="24"
+                FontWeight="Medium"
+                VerticalAlignment="Center"
+                Margin="10 0 10 10"
+                Text="{Binding CurrentTour.Name}" />
+
+            <Button 
+                Grid.Row="0" 
+                HorizontalAlignment="Right"
+                Margin="0 0 5 0"
+                BorderThickness="0"
+                Background="Transparent"
+                Style="{DynamicResource ModernButton}"
+                view:ContextMenuBehaviour.IsLeftClickEnabled="True">
+
+                <Image 
+                    Source="/Resources/3_dots_horizontal.png" 
+                    Width="30"></Image>
+
+                <Button.ContextMenu>
+                    <ContextMenu 
+                        Style="{DynamicResource TourMenu}" 
+                        DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.DataContext}">
+                    </ContextMenu>
+                </Button.ContextMenu>
+               
+            </Button>
+
+            <Grid 
+                Grid.Row="1"
+                Margin="0 20 0 0">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition MaxWidth="490" MinWidth="400" Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border 
+                    Grid.Column="0"
+                    CornerRadius="10"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1" 
+                    Margin="0 0 15 0">
+
                     <Grid>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="*"></RowDefinition>
-                            <RowDefinition Height="50"></RowDefinition>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="auto" />
                         </Grid.RowDefinitions>
-                        <DataGrid Grid.Row="0" Background="White">
-                        </DataGrid>
-                        <Button Grid.Row="1" Margin="10,0,10,0" Height="26" HorizontalAlignment="Left" Width="90" 
-                                Content="Löschen"
-                                Command="{Binding DeleteTourLogCommand}"/>
-                        <Button Grid.Row="1" Margin="115,0,10,0" Height="26" HorizontalAlignment="Left" Width="90" 
-                                Content="Bearbeiten"
-                                Command="{Binding EditTourLogCommand}"/>
-                        <Button Grid.Row="1" Margin="220,0,0,0" Height="26" HorizontalAlignment="Left" Width="110" 
-                                Content="Report erstellen"
-                                Command="{Binding CreateReportCommand}"/>
+
+                        <TextBlock
+                            Grid.Row="0"
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="Medium"
+                            Margin="25, 20, 20, 0"
+                            Text="Tourinfo" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Margin="25, 25, 20, 0"
+                            Text="Von" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            FontSize="15"
+                            FontWeight="Light"
+                            Margin="25, 5, 20, 0"
+                            Text="{Binding CurrentTour.From}" />
+
+                        <TextBlock
+                            Grid.Row="3"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Margin="25, 25, 20, 0"
+                            Text="Bis" />
+
+                        <TextBlock
+                            Grid.Row="4"
+                            FontSize="15"
+                            FontWeight="Light"
+                            Margin="25, 5, 20, 0"
+                            Text="{Binding CurrentTour.To}" />
+
+                        <TextBlock
+                            Grid.Row="5"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Margin="25, 17, 20, 0"
+                            Text="Typ" />
+
+                        <TextBlock
+                            Grid.Row="6"
+                            FontSize="15"
+                            FontWeight="Light"
+                            Margin="25, 5, 20, 0"
+                            Text="{Binding CurrentTour.Type}" />
+
+                        <TextBlock
+                            Grid.Row="7"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Margin="25, 17, 20, 0"
+                            Text="Distanz" />
+
+                        <TextBlock
+                            Grid.Row="8"
+                            FontSize="15"
+                            FontWeight="Light"
+                            Margin="25, 5, 20, 0"
+                            Text="{Binding CurrentTour.Distance, StringFormat='\{0} km'}" />
+
+                        <TextBlock
+                            Grid.Row="9"
+                            FontSize="15"
+                            FontWeight="Medium"
+                            Margin="25, 17, 20, 0"
+                            Text="Beschreibung" />
+
+                        <TextBlock
+                            Grid.Row="10"
+                            FontSize="15"
+                            FontWeight="Light"
+                            Margin="25, 5, 20, 20"
+                            Text="{Binding CurrentTour.Description}" />
+
                     </Grid>
-                </TabItem>
-                <TabItem Header="Neuer Toureintrag">
-                    <Grid Margin="15,0,15,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="10"></RowDefinition>
-                            <RowDefinition Height="20"></RowDefinition>
-                            <RowDefinition Height="30"></RowDefinition>
-                            <RowDefinition Height="10"></RowDefinition>
-                            <RowDefinition Height="20"></RowDefinition>
-                            <RowDefinition Height="30"></RowDefinition>
-                            <RowDefinition Height="10"></RowDefinition>
-                            <RowDefinition Height="20"></RowDefinition>
-                            <RowDefinition Height="30"></RowDefinition>
-                            <RowDefinition Height="10"></RowDefinition>
-                            <RowDefinition Height="30"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <TextBlock Grid.Row="1">Von:</TextBlock>
-                        <TextBox Grid.Row="2" VerticalAlignment="Center" Height="26"
-                                 Text="{Binding LogTimeFrom, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-                        <TextBlock Grid.Row="4">Bis:</TextBlock>
-                        <TextBox Grid.Row="5" VerticalAlignment="Center" Height="26"
-                                 Text="{Binding LogTimeTo, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-                        <TextBlock Grid.Row="7">Distanz (km):</TextBlock>
-                        <TextBox Grid.Row="8" VerticalAlignment="Center" Height="26"
-                                 Text="{Binding LogDistance, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-                        <Button Grid.Row="10" Height="26" 
-                                Content="Toureintrag Speichern"
-                                Command="{Binding SaveTourlogCommand}"/>
+                </Border>
+
+                <Border 
+                    Grid.Column="1"
+                    CornerRadius="10"
+                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderThickness="1">
+
+                    <Image 
+                        Stretch="Uniform"
+                        HorizontalAlignment="Center"
+                        MaxHeight="360"
+                        Source="{Binding Image}" />
+
+                </Border>
+            </Grid>
+
+            <Border 
+                Grid.Row="2"
+                CornerRadius="10"
+                BorderBrush="{DynamicResource BorderColor}"
+                BorderThickness="1" 
+                Margin="0 25 0 0">
+
+                <Grid Grid.Row="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Margin="0 0 0 15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock 
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="Medium"
+                            Margin="25, 20, 25, 0"
+                            Text="Vergangene Touren" />
+
+                        <Button Style="{DynamicResource CommandButton}" 
+                            Grid.Column="1"
+                            Padding="20 10 20 10"
+                            Margin="0 20 20 0"
+                            FontSize="14"
+                            Content="Neuer Tourlog" />
                     </Grid>
-                </TabItem>
-            </TabControl>
+
+                    <Grid Grid.Row="1">
+
+                        <ListView Style="{DynamicResource ModernListView}" 
+                            Grid.Row="1" 
+                            Margin="0 0 0 0"
+                            Padding="0 0 0 10"
+                            BorderThickness="0"
+                            Background="{DynamicResource GrayBlueBackground}"
+                            ItemsSource="{Binding CurrentTour.TourLogs.Value}">
+
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel 
+                                        IsItemsHost="True" 
+                                        Orientation="Vertical"
+                                        Height="{Binding (FrameworkElement.ActualHeight), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
+                                    
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+
+                            <ListView.ItemTemplate>
+                                <DataTemplate DataType="models:TourLog">
+
+                                    <Border
+                                        Background="white" 
+                                        Padding="10 15 10 15" 
+                                        Margin="15 10 15 0"
+                                        CornerRadius="5">
+
+                                        <Grid x:Name="TourLogGrid">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Grid Grid.Column="0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                </Grid.RowDefinitions>
+
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock  
+                                                    Grid.Row="0"
+                                                    Grid.Column="0"
+                                                    Text="Start Zeit:" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Margin="20 0 0 5" />
+
+                                                <TextBlock  
+                                                    Grid.Row="0"
+                                                    Grid.Column="1"
+                                                    Text="{Binding TimeFrom}" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Light"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Text="End Zeit:" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Margin="20 0 0 5" />
+
+                                                <TextBlock  
+                                                    Grid.Row="1"
+                                                    Grid.Column="1"
+                                                    Text="{Binding TimeFrom}" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Light"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="2"
+                                                    Grid.Column="0"
+                                                    Text="Bewertung:" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="2"
+                                                    Grid.Column="1"
+                                                    Text="{Binding Rating, StringFormat='\{0}/5'}" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Light"
+                                                    Margin="20 0 0 0" />
+                                            </Grid>
+
+                                            <Button 
+                                                Style="{DynamicResource ModernButton}"
+                                                Grid.Column="1" 
+                                                Margin="15 0 0 0"
+                                                Background="Transparent"
+                                                BorderThickness="0">
+                                            
+                                                <Image
+                                                    Source="/Resources/3_dots.png" 
+                                                    Width="40" />
+                                                
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+
+                        </ListView>
+                    </Grid>
+                </Grid>
+            </Border>
+
         </Grid>
     </Grid>
 

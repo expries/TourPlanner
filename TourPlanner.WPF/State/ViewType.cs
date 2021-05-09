@@ -3,6 +3,7 @@
     public enum ViewType
     {
         Home,
-        NewTour
+        NewTour,
+        NewTourLog
     }
 }

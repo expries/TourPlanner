@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.BL.Services
@@ -7,8 +8,18 @@ namespace TourPlanner.BL.Services
     {
         public List<Tour> GetTours();
 
+        public Task<List<Tour>> GetToursAsync();
+
         public List<Tour> FindTours(string query);
 
+        public Task<List<Tour>> FindToursAsync(string query);
+
         public Tour SaveTour(Tour tour);
+
+        public Task<Tour> SaveTourAsync(Tour tour);
+
+        public bool DeleteTour(Tour tour);
+
+        public Task<bool> DeleteTourAsync(Tour tour);
     }
 }

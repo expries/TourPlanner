@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -32,9 +33,16 @@ namespace TourPlannerTestDemo
             //const string sql = "SELECT * FROM tour";
             //var tours = dbConnection.Query<Tour>(sql);
             //var tour = tours.First().TourLogs.Value;
-            
-            //var x = new MapRepository(configuration);
-            //var result = x.GetDirection("Graz", "Wien");
+
+            var coord = new Coordinates();
+            coord.Lat = 5.23;
+            coord.Lng = Double.Epsilon;
+            Console.WriteLine(coord.Lat.ToString(CultureInfo.InvariantCulture));
+            return;
+
+            var x = new MapRepository(configuration);
+            var a = x.FindLocation("Graz", "Wien");
+
             //var locations = new List<string> { "Vienna|AT", "Graz|AT" };
             //byte[] image = x.GetImage(locations);
             Console.WriteLine("");

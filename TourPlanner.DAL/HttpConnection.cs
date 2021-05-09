@@ -57,8 +57,7 @@ namespace TourPlanner.DAL
         public static T Post<T>(string url, object data)
         {
             string response = Post(url, data);
-            var result = JsonConvert.DeserializeObject<T>(response);
-            return result;
+            return JsonConvert.DeserializeObject<T>(response);
         }
         
         /// <summary>
@@ -73,11 +72,11 @@ namespace TourPlanner.DAL
             request.Method = WebRequestMethods.Http.Post;
             request.ContentType = "application/json";
 
-            using var stream = request.GetRequestStream();
             string content = JsonConvert.SerializeObject(data);
             byte[] contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
-            stream.Write(contentBytes, 0,contentBytes.Length);
-
+            
+            using var stream = request.GetRequestStream();
+            stream.Write(contentBytes, 0, contentBytes.Length);
             return GetStringResponse(request);
         }
 
@@ -97,7 +96,7 @@ namespace TourPlanner.DAL
             }
             
             var reader = new StreamReader(responseStream);
-            string data = reader.ReadToEnd();
+            var data = reader.ReadToEnd();
             return data;
         }
 
@@ -113,7 +112,7 @@ namespace TourPlanner.DAL
 
             if (responseStream is null)
             {
-                return new byte[0];
+                return System.Array.Empty<byte>();
             }
 
             using var reader = new BinaryReader(responseStream);

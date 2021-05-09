@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
+using TourPlanner.Domain.Models;
 
 namespace TourPlanner.DAL.Requests
 {
@@ -36,10 +37,10 @@ namespace TourPlanner.DAL.Requests
     public class BoundingBox
     {
         [JsonProperty("ul")]
-        public Ul Ul { get; set; }
+        public Coordinates Ul { get; set; }
 
         [JsonProperty("lr")]
-        public Lr Lr { get; set; }
+        public Coordinates Lr { get; set; }
     }
 
     public class LatLng
@@ -51,16 +52,7 @@ namespace TourPlanner.DAL.Requests
         public double Lat { get; set; }
     }
 
-    public class DisplayLatLng
-    {
-        [JsonProperty("lng")]
-        public double Lng { get; set; }
-
-        [JsonProperty("lat")]
-        public double Lat { get; set; }
-    }
-
-    public class Location
+    public class LocationData
     {
         [JsonProperty("latLng")]
         public LatLng LatLng { get; set; }
@@ -90,7 +82,7 @@ namespace TourPlanner.DAL.Requests
         public string Type { get; set; }
 
         [JsonProperty("displayLatLng")]
-        public DisplayLatLng DisplayLatLng { get; set; }
+        public Coordinates Coordinates { get; set; }
 
         [JsonProperty("linkId")]
         public int LinkId { get; set; }
@@ -396,7 +388,7 @@ namespace TourPlanner.DAL.Requests
         public string SessionId { get; set; }
 
         [JsonProperty("locations")]
-        public List<Location> Locations { get; set; }
+        public List<LocationData> Locations { get; set; }
 
         [JsonProperty("hasCountryCross")]
         public bool HasCountryCross { get; set; }

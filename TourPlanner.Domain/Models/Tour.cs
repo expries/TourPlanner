@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace TourPlanner.Domain.Models
 {
@@ -16,15 +17,44 @@ namespace TourPlanner.Domain.Models
 
         [Column(Name="locationTo")]
         public string To { get; set; }
+        
+        [Column(Name="distance")]
+        public double Distance { get; set; }
+
+        [Column(Name="tourType")]
+        public TourType Type { get; set; }
 
         [Column(Name="description")]
         public string Description { get; set; }
 
-        [OneToMany(ForeignKey="fk_tourID", Table="tour_log")]
+        [Column(Name="imagePath")]
+        public string ImagePath { get; set; }
+
+        public byte[] Image
+        {
+            get
+            {
+                if (!File.Exists(this.ImagePath))
+                {
+                    return Array.Empty<byte>();
+                }
+                
+                return File.ReadAllBytes(this.ImagePath);
+            }
+        }
+
+        [OneToMany(ForeignKey = "fk_tourID", Table = "tour_log")]
         public Lazy<List<TourLog>> TourLogs { get; set; }
 
         public Tour()
         {
+            this.TourId = 0;
+            this.Distance = 0;
+            this.Name = string.Empty;
+            this.From = string.Empty;
+            this.To = string.Empty;
+            this.Description = string.Empty;
+            this.ImagePath = string.Empty;
             this.TourLogs = new Lazy<List<TourLog>>();
         }
     }

@@ -5,64 +5,99 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:TourPlanner.WPF.ViewModels"
         xmlns:views="clr-namespace:TourPlanner.WPF.Views"
-        xmlns:state="clr-namespace:TourPlanner.WPF.State"
         mc:Ignorable="d"
-        Title="Tour Planner" Height="500" Width="800" MinHeight="420" MinWidth="760">
+        Title="Tour Planner" 
+        Height="720" Width="1000" 
+        MinHeight="720" MinWidth="1200" 
+        WindowStyle="None">
 
-    <Window.Resources>
-        <DataTemplate DataType="{x:Type viewModels:NewTourViewModel}">
-            <views:NewTourView></views:NewTourView>
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type viewModels:HomeViewModel}">
-            <views:HomeView></views:HomeView>
-        </DataTemplate>
-    </Window.Resources>
+    <WindowChrome.WindowChrome>
+        <WindowChrome 
+            CaptionHeight="32" 
+            ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
+    </WindowChrome.WindowChrome>
 
-    <Grid>
+    <Window.Style>
+        <Style TargetType="{x:Type Window}">
+            <Setter Property="FontFamily"
+            Value="Roboto" />
+        </Style>
+    </Window.Style>
+
+    <Grid Background="White">
+        
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="40px"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <Grid Grid.Row="0" Background="Black">
+
+        <views:NavbarView Grid.Column="0" />
+
+        <ContentControl 
+            Grid.Column="1" 
+            Padding="0 50 0 0"
+            Content="{Binding Navigator.CurrentViewModel}">
+            
+            <ContentControl.Resources>
+                <DataTemplate DataType="{x:Type viewModels:NewTourViewModel}">
+                    <views:NewTourView />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type viewModels:HomeViewModel}">
+                    <views:HomeView />
+                </DataTemplate>
+            </ContentControl.Resources>
+            
+        </ContentControl>
+
+        <Grid 
+            Grid.Column="1" 
+            HorizontalAlignment="Right" 
+            VerticalAlignment="Top" 
+            Margin="20 10 20 10" 
+            Height="32"
+            Width="auto">
+
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="15"></ColumnDefinition>
-                <ColumnDefinition Width="50"></ColumnDefinition>
-                <ColumnDefinition Width="70"></ColumnDefinition>
-                <ColumnDefinition Width="90"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="15"></ColumnDefinition>
+                <ColumnDefinition Width="40" />
+                <ColumnDefinition Width="40" />
+                <ColumnDefinition Width="40" />
             </Grid.ColumnDefinitions>
 
-            <RadioButton
-                Content="Touren" 
-                IsChecked="True"
-                Command="{Binding Navigator.UpdateCurrentViewModelCommand}" 
-                CommandParameter="{x:Static state:ViewType.Home}" 
+            <Button 
+                Grid.Column="0"
+                Width="32"
+                Background="Transparent" 
+                BorderBrush="Transparent"
+                Style="{StaticResource WindowControlButton}"
+                Click="MinimizeWindow">
+
+                <Image Source="/Resources/minimize.png" />
+            </Button>
+
+            <Button 
+                Grid.Column="1"
+                Width="32"
+                Background="Transparent" 
+                BorderBrush="Transparent"
+                Style="{StaticResource WindowControlButton}"
+                Click="MaximizeWindow">
+
+                <Image Source="/Resources/maximize.png" />
+            </Button>
+
+            <Button 
                 Grid.Column="2"
-                VerticalAlignment="Center" Foreground="White"/>
-            
-            <RadioButton 
-                Content="Neue Tour" 
-                Command="{Binding Navigator.UpdateCurrentViewModelCommand}" 
-                CommandParameter="{x:Static state:ViewType.NewTour}"
-                Grid.Column="3"
-                VerticalAlignment="Center" Foreground="White"/>
+                Width="32"
+                Background="Transparent" 
+                BorderBrush="Transparent"
+                Style="{StaticResource WindowControlButton}"
+                Click="CloseWindow">
 
-            <Menu Grid.Column="1" BorderBrush="Black" Background="Black" Foreground="White" VerticalAlignment="Center">
-                <MenuItem Header="_Datei" Background="Black" Foreground="White">
-                    <MenuItem BorderBrush="Black" Background="Black" Foreground="White" Header="Touren importieren"/>
-                    <MenuItem BorderBrush="Black" Background="Black" Foreground="White" Header="Touren exportieren"/>
-                    <MenuItem BorderBrush="Black" Background="Black" Foreground="White" Header="Summary Report"/>
-                </MenuItem>
-            </Menu>
+                <Image Source="/Resources/close.png" />
+            </Button>
+
         </Grid>
-
-        <ContentControl Grid.Row="1" Margin="10,15,10,10" 
-                        Content="{Binding Navigator.CurrentViewModel}"/>
+        
     </Grid>
     
 </Window>

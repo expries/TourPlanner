@@ -1,9 +1,12 @@
 ﻿using System.IO;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TourPlanner.BL.Services;
+using TourPlanner.DAL;
 using TourPlanner.DAL.Repositories;
+using TourPlanner.Domain;
 using TourPlanner.WPF.State;
 using TourPlanner.WPF.ViewModels;
 
@@ -25,6 +28,7 @@ namespace TourPlanner.WPF
 
         private static void ConfigureServices(IServiceCollection services)
         {
+            DatabaseConnection.MapEnum<TourType>("tour_type");
             var configuration = GetConfiguration();
             services.AddSingleton<IConfiguration>(_ => configuration);
             
