@@ -15,7 +15,7 @@ namespace TourPlanner.WPF.State
                 var ctx = this._currentViewModel?.Context;
                 this._currentViewModel = value;
                 this._currentViewModel.OnNavigation(ctx);
-                OnPropertyChanged(nameof(this.CurrentViewModel));
+                OnPropertyChanged();
             }
         }
         

@@ -232,6 +232,52 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition/>
                                 <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+
+                            <Button 
+                                Style="{DynamicResource HoverButton}"  
+                                Grid.Row="0"
+                                Content="Report erstellen"
+                                Padding="10"
+                                FontSize="15" 
+                                Command="{Binding CreateReportCommand}" />
+                            
+                            <Button 
+                                Style="{DynamicResource HoverButton}" 
+                                Grid.Row="1"
+                                Content="Bearbeiten"
+                                Padding="10"
+                                FontSize="15"
+                                Command="{Binding UpdateCurrentTourCommand}" />
+
+                            <Button 
+                                Style="{DynamicResource HoverButton}"  
+                                Grid.Row="2"
+                                Content="Löschen"
+                                Padding="10"
+                                FontSize="15" 
+                                Command="{Binding DeleteCurrentTourCommand}" />
+                        </Grid>
+                    </Border>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="TourLogMenu" TargetType="{x:Type ContextMenu}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border 
+                        CornerRadius="7" 
+                        Background="White">
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
                             </Grid.RowDefinitions>
 
                             <Button 
@@ -240,7 +286,8 @@
                                 Content="Bearbeiten"
                                 Padding="10"
                                 FontSize="15"
-                                Command="{Binding UpdateCurrentTourCommand}" />
+                                Command="{Binding ElementName=Root, Path=DataContext.EditTourLogCommand}"
+                                CommandParameter="{Binding}" />
 
                             <Button 
                                 Style="{DynamicResource HoverButton}"  
@@ -248,7 +295,8 @@
                                 Content="Löschen"
                                 Padding="10"
                                 FontSize="15" 
-                                Command="{Binding DeleteCurrentTourCommand}" />
+                                Command="{Binding DeleteTourLogCommand}"
+                                CommandParameter="{Binding}" />
                         </Grid>
                     </Border>
 

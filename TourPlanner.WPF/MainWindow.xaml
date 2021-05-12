@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:TourPlanner.WPF.ViewModels"
         xmlns:views="clr-namespace:TourPlanner.WPF.Views"
+        xmlns:converters="clr-namespace:TourPlanner.WPF.Converters"
         mc:Ignorable="d"
         Title="Tour Planner" 
         Height="720" Width="1000" 
@@ -16,6 +17,10 @@
             CaptionHeight="32" 
             ResizeBorderThickness="{x:Static SystemParameters.WindowResizeBorderThickness}" />
     </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <converters:DoubleConverter x:Key="DoubleConverter" />
+    </Window.Resources>
 
     <Window.Style>
         <Style TargetType="{x:Type Window}">
@@ -44,6 +49,9 @@
                 </DataTemplate>
                 <DataTemplate DataType="{x:Type viewModels:HomeViewModel}">
                     <views:HomeView />
+                </DataTemplate>
+                <DataTemplate DataType="{x:Type viewModels:NewTourLogViewModel}">
+                    <views:NewTourLogView />
                 </DataTemplate>
             </ContentControl.Resources>
             

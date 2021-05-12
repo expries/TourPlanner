@@ -21,5 +21,9 @@ namespace TourPlanner.BL.Services
         public bool DeleteTour(Tour tour);
 
         public Task<bool> DeleteTourAsync(Tour tour);
+
+        public Task<Tour> UpdateTourAsync(Tour tour);
+
+        public Tour UpdateTour(Tour tour);
     }
 }

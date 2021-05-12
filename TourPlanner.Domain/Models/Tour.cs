@@ -30,6 +30,9 @@ namespace TourPlanner.Domain.Models
         [Column(Name="imagePath")]
         public string ImagePath { get; set; }
 
+        [OneToMany(ForeignKey = "fk_tourID", Table = "tour_log")]
+        public Lazy<List<TourLog>> TourLogs { get; set; }
+
         public byte[] Image
         {
             get
@@ -42,10 +45,7 @@ namespace TourPlanner.Domain.Models
                 return File.ReadAllBytes(this.ImagePath);
             }
         }
-
-        [OneToMany(ForeignKey = "fk_tourID", Table = "tour_log")]
-        public Lazy<List<TourLog>> TourLogs { get; set; }
-
+        
         public Tour()
         {
             this.TourId = 0;

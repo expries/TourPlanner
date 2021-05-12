@@ -3,7 +3,6 @@ using System.Windows.Input;
 using TourPlanner.BL.Services;
 using TourPlanner.WPF.State;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using TourPlanner.Domain;
@@ -11,7 +10,7 @@ using TourPlanner.Domain.Models;
 
 namespace TourPlanner.WPF.ViewModels
 {
-    public class NewTourViewModel : ViewModelBase, INotifyDataErrorInfo
+    public class NewTourViewModel : ValidatedViewModelBase
     {
         private IMapService MapService { get; }
 
@@ -28,31 +27,13 @@ namespace TourPlanner.WPF.ViewModels
         private List<string> _fromSuggestions = new List<string>();
         
         private List<string> _toSuggestions = new List<string>();
-        
-        private List<TourType> _tourTypes = new List<TourType>
-        {
-            TourType.Bicycle,
-            TourType.Fastest,
-            TourType.Pedestrian,
-            TourType.Shortest
-        };
 
         private string _fromQuery = string.Empty;
         
         private string _toQuery = string.Empty;
-        
-        private string _from = string.Empty;
 
-        private string _to = string.Empty;
+        private Tour _tour = new Tour();
 
-        private string _tourName = string.Empty;
-
-        private string _description = string.Empty;
-
-        private TourType _type = TourType.Fastest;
-
-        private int _tourId = 0;
-        
         // public properties
 
         [Required(ErrorMessage = "Dieses Feld ist verpflichtend.")]
@@ -80,10 +61,10 @@ namespace TourPlanner.WPF.ViewModels
         [Required(ErrorMessage = "Dieses Feld ist verpflichtend.")]
         public string From 
         {
-            get => this._from;
+            get => this._tour.From;
             set
             {
-                this._from = value;
+                this._tour.From = value;
                 OnPropertyChanged();
             }
         }
@@ -91,10 +72,10 @@ namespace TourPlanner.WPF.ViewModels
         [Required(ErrorMessage = "Dieses Feld ist verpflichtend.")]
         public string To
         {
-            get => this._to;
+            get => this._tour.To;
             set
             {
-                this._to = value;
+                this._tour.To = value;
                 OnPropertyChanged();
             }
         }
@@ -102,10 +83,10 @@ namespace TourPlanner.WPF.ViewModels
         [Required(ErrorMessage = "Dieses Feld ist verpflichtend.")]
         public TourType Type
         {
-            get => this._type;
+            get => this._tour.Type;
             set
             {
-                this._type = value;
+                this._tour.Type = value;
                 OnPropertyChanged();
             }
         }
@@ -113,35 +94,24 @@ namespace TourPlanner.WPF.ViewModels
         [Required(ErrorMessage = "Dieses Feld ist verpflichtend.")]
         public string TourName
         {
-            get => this._tourName;
+            get => this._tour.Name;
             set
             {
-                this._tourName = value;
+                this._tour.Name = value;
                 OnPropertyChanged();
             }
         }
         
-
         public string Description
         {
-            get => this._description;
+            get => this._tour.Description;
             set
             {
-                this._description = value;
+                this._tour.Description = value;
                 OnPropertyChanged();
             }
         }
 
-        public List<TourType> TourTypes
-        {
-            get => this._tourTypes;
-            set
-            {
-                this._tourTypes = value;
-                OnPropertyChanged();
-            }
-        }
-        
         public List<string> FromSuggestions
         {
             get => this._fromSuggestions;
@@ -161,6 +131,14 @@ namespace TourPlanner.WPF.ViewModels
                 OnPropertyChanged();
             }
         }
+        
+        public List<TourType> TourTypes { get; } = new List<TourType>
+        {
+            TourType.Bicycle,
+            TourType.Fastest,
+            TourType.Pedestrian,
+            TourType.Shortest
+        };
         
         // public commands
         
@@ -183,8 +161,16 @@ namespace TourPlanner.WPF.ViewModels
             {
                 tour = new Tour();
             }
-
-            LoadTour(tour);
+            
+            this._fromQuery = tour.From;
+            this.ToQuery = tour.To;
+            this.FromSuggestions = new List<string> { tour.From };
+            this.ToSuggestions = new List<string> { tour.To };
+            this.Locations[tour.From] = new Location { FullName = tour.From };
+            this.Locations[tour.To] = new Location { FullName = tour.To };
+            
+            this._tour = tour;
+            Validate();
         }
 
         private async void LoadRoute(object parameter)
@@ -220,23 +206,14 @@ namespace TourPlanner.WPF.ViewModels
         private async void SaveTour(object parameter)
         {
             Debug.Print("Save tour was triggered");
-
-            var from = this.Locations[this.From];
-            var to = this.Locations[this.To];
             
-            var tour = new Tour();
-            tour.TourId = this._tourId;
-            tour.Name = this.TourName;
-            tour.From = from.FullName;
-            tour.To = to.FullName;
-            tour.Description = this.Description;
-            tour.Type = this.Type;
-
             this._tourSavingInProgress = true;
-            var newTour = await this.TourService.SaveTourAsync(tour);
+            var newTour = await this.TourService.SaveTourAsync(this._tour);
             this._tourSavingInProgress = false;
+            
             this.Context = newTour;
             Navigator.Instance.UpdateCurrentViewModelCommand.Execute(ViewType.Home);
+            this.Context = null;
         }
 
         private bool SaveTourCanExecute(object parameter)
@@ -250,24 +227,6 @@ namespace TourPlanner.WPF.ViewModels
             };
             
             return dependentProperties.All(ValidateProperty) && !this._tourSavingInProgress;
-        }
-        
-        private void LoadTour(Tour tour)
-        {
-            this.Type = tour.Type;
-            this.TourName = tour.Name;
-            this.From = tour.From;
-            this.To = tour.To;
-            this.Description = tour.Description;
-            this._tourId = tour.TourId;
-
-            this._fromQuery = tour.From;
-            this.ToQuery = tour.To;
-            
-            this.FromSuggestions = new List<string> { tour.From };
-            this.ToSuggestions = new List<string> { tour.To };
-            this.Locations[tour.From] = new Location { FullName = tour.From };
-            this.Locations[tour.To] = new Location { FullName = tour.To };
         }
     }
 }

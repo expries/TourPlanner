@@ -4,16 +4,17 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:view="clr-namespace:TourPlanner.WPF.Views"
+             xmlns:converters="clr-namespace:TourPlanner.WPF.Converters"
              xmlns:models="clr-namespace:TourPlanner.Domain.Models;assembly=TourPlanner.Domain"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
 
     <UserControl.Resources>
-
+        <converters:DateConverter x:Key="DateConverter"></converters:DateConverter>
     </UserControl.Resources>
 
 
-    <Grid>
+    <Grid x:Name="Root">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="320" />
             <ColumnDefinition Width="*" />
@@ -137,7 +138,7 @@
                 <Border 
                     Grid.Column="0"
                     CornerRadius="10"
-                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderBrush="{StaticResource BorderColor}"
                     BorderThickness="1" 
                     Margin="0 0 15 0">
 
@@ -241,7 +242,7 @@
                 <Border 
                     Grid.Column="1"
                     CornerRadius="10"
-                    BorderBrush="{DynamicResource BorderColor}"
+                    BorderBrush="{StaticResource BorderColor}"
                     BorderThickness="1">
 
                     <Image 
@@ -256,7 +257,7 @@
             <Border 
                 Grid.Row="2"
                 CornerRadius="10"
-                BorderBrush="{DynamicResource BorderColor}"
+                BorderBrush="{StaticResource BorderColor}"
                 BorderThickness="1" 
                 Margin="0 25 0 0">
 
@@ -285,12 +286,15 @@
                             Padding="20 10 20 10"
                             Margin="0 20 20 0"
                             FontSize="14"
-                            Content="Neuer Tourlog" />
+                            Content="Neuer Tourlog"
+                            Command="{Binding CreateTourLogCommand}" />
                     </Grid>
 
                     <Grid Grid.Row="1">
 
-                        <ListView Style="{DynamicResource ModernListView}" 
+                        <ListView 
+                            Style="{DynamicResource ModernListView}" 
+                            Name="TourLogList"
                             Grid.Row="1" 
                             Margin="0 0 0 0"
                             Padding="0 0 0 10"
@@ -298,15 +302,6 @@
                             Background="{DynamicResource GrayBlueBackground}"
                             ItemsSource="{Binding CurrentTour.TourLogs.Value}">
 
-                            <ListView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel 
-                                        IsItemsHost="True" 
-                                        Orientation="Vertical"
-                                        Height="{Binding (FrameworkElement.ActualHeight), RelativeSource={RelativeSource AncestorType=ScrollContentPresenter}}" />
-                                    
-                                </ItemsPanelTemplate>
-                            </ListView.ItemsPanel>
 
                             <ListView.ItemTemplate>
                                 <DataTemplate DataType="models:TourLog">
@@ -315,48 +310,54 @@
                                         Background="white" 
                                         Padding="10 15 10 15" 
                                         Margin="15 10 15 0"
-                                        CornerRadius="5">
+                                        CornerRadius="5"
+                                        x:Name="RootB">
 
                                         <Grid x:Name="TourLogGrid">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="auto" />
                                                 <ColumnDefinition Width="auto" />
                                             </Grid.ColumnDefinitions>
 
                                             <Grid Grid.Column="0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="auto" />
+                                                </Grid.ColumnDefinitions>
                                                 <Grid.RowDefinitions>
+                                                    <RowDefinition />
                                                     <RowDefinition />
                                                     <RowDefinition />
                                                     <RowDefinition />
                                                 </Grid.RowDefinitions>
 
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="auto" />
-                                                    <ColumnDefinition />
-                                                </Grid.ColumnDefinitions>
-
                                                 <TextBlock  
                                                     Grid.Row="0"
                                                     Grid.Column="0"
-                                                    Text="Start Zeit:" 
+                                                    Text="Datum" 
                                                     VerticalAlignment="Center"
                                                     FontSize="14"
                                                     FontWeight="Medium"
                                                     Margin="20 0 0 5" />
 
                                                 <TextBlock  
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Text="{Binding TimeFrom}" 
+                                                    Grid.Row="1"
+                                                    Grid.Column="0"
+                                                    Text="{Binding Date, Converter={StaticResource DateConverter}}" 
                                                     VerticalAlignment="Center"
                                                     FontSize="14"
                                                     FontWeight="Light"
                                                     Margin="20 0 0 0" />
 
                                                 <TextBlock  
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    Text="End Zeit:" 
+                                                    Grid.Row="0"
+                                                    Grid.Column="1"
+                                                    Text="Dauer" 
                                                     VerticalAlignment="Center"
                                                     FontSize="14"
                                                     FontWeight="Medium"
@@ -365,43 +366,207 @@
                                                 <TextBlock  
                                                     Grid.Row="1"
                                                     Grid.Column="1"
-                                                    Text="{Binding TimeFrom}" 
+                                                    Text="{Binding Duration, StringFormat='\{0} min'}" 
                                                     VerticalAlignment="Center"
                                                     FontSize="14"
                                                     FontWeight="Light"
                                                     Margin="20 0 0 0" />
 
                                                 <TextBlock  
-                                                    Grid.Row="2"
-                                                    Grid.Column="0"
-                                                    Text="Bewertung:" 
+                                                    Grid.Row="0"
+                                                    Grid.Column="2"
+                                                    Text="Bewertung" 
                                                     VerticalAlignment="Center"
                                                     FontSize="14"
                                                     FontWeight="Medium"
                                                     Margin="20 0 0 0" />
 
                                                 <TextBlock  
-                                                    Grid.Row="2"
-                                                    Grid.Column="1"
+                                                    Grid.Row="1"
+                                                    Grid.Column="2"
                                                     Text="{Binding Rating, StringFormat='\{0}/5'}" 
                                                     VerticalAlignment="Center"
                                                     FontSize="14"
                                                     FontWeight="Light"
                                                     Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="0"
+                                                    Grid.Column="3"
+                                                    Text="Temperatur" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="1"
+                                                    Grid.Column="3"
+                                                    Text="{Binding Temperature}" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Light"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="0"
+                                                    Grid.Column="4"
+                                                    Text="Geschwindigkeit" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="1"
+                                                    Grid.Column="4"
+                                                    Text="{Binding AverageSpeed}" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Light"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="2"
+                                                    Grid.Column="0"
+                                                    Text="Gefahren-Niveau" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Margin="20 15 0 5" />
+
+                                                <TextBlock  
+                                                    Grid.Row="3"
+                                                    Grid.Column="0"
+                                                    Text="{Binding DangerLevel}" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Light"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="2"
+                                                    Grid.Column="1"
+                                                    Text="Schwierigkeit" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Margin="20 15 0 5" />
+
+                                                <TextBlock  
+                                                    Grid.Row="3"
+                                                    Grid.Column="1"
+                                                    Text="{Binding Difficulty}" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Light"
+                                                    Margin="20 0 0 0" />
+
+                                                <TextBlock  
+                                                    Grid.Row="2"
+                                                    Grid.Column="2"
+                                                    Text="Wetter" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Medium"
+                                                    Margin="20 15 0 5" />
+
+                                                <TextBlock  
+                                                    Grid.Row="3"
+                                                    Grid.Column="2"
+                                                    Text="{Binding Weather}" 
+                                                    VerticalAlignment="Center"
+                                                    FontSize="14"
+                                                    FontWeight="Light"
+                                                    Margin="20 0 0 5" />
+
                                             </Grid>
+
+                                            <Grid Grid.Column="1" Margin="30 0 10 0">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                </Grid.RowDefinitions>
+
+                                                <Button 
+                                                    Grid.Row="0" 
+                                                    Style="{DynamicResource CommandButton}"
+                                                    Padding="10 0 10 0"
+                                                    Content="Bearbeiten"
+                                                    Margin="0 0 0 2.5" 
+                                                    Command="{Binding ElementName=Root, Path=DataContext.EditTourLogCommand}"
+                                                    CommandParameter="{Binding}" />
+
+                                                <Button 
+                                                    Grid.Row="1" 
+                                                    Style="{DynamicResource CommandButton}"
+                                                    Padding="10 0 10 0"
+                                                    Margin="0 2.5 0 0"
+                                                    Content="Löschen"
+                                                    Command="{Binding ElementName=Root, Path=DataContext.DeleteTourLogCommand}"
+                                                    CommandParameter="{Binding}" />
+                                            </Grid>
+
+                                            <!--
 
                                             <Button 
                                                 Style="{DynamicResource ModernButton}"
                                                 Grid.Column="1" 
                                                 Margin="15 0 0 0"
-                                                Background="Transparent"
-                                                BorderThickness="0">
-                                            
+                                                VerticalAlignment="Top"
+                                                 view:ContextMenuBehaviour.IsLeftClickEnabled="True">
+
                                                 <Image
+                                                    Margin="0 0 0 0"
+                                                    VerticalAlignment="Center"
                                                     Source="/Resources/3_dots.png" 
                                                     Width="40" />
-                                                
+
+                                                <Button.ContextMenu>
+                                                    <ContextMenu 
+                                                        Name="Fun"
+                                                        DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.DataContext}">
+
+                                                        <ContextMenu.Template>
+                                                            <ControlTemplate>
+                                                                <Border DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContextMenu}}}" 
+                                                                    CornerRadius="7" 
+                                                                    Background="White"
+                                                                        x:Name="AFF">
+
+                                                                    <Grid>
+                                                                        <Grid.RowDefinitions>
+                                                                            <RowDefinition/>
+                                                                            <RowDefinition/>
+                                                                        </Grid.RowDefinitions>
+
+                                                                        <Button 
+                                                                            Style="{DynamicResource HoverButton}" 
+                                                                            Grid.Row="0"
+                                                                            Content="Bearbeiten"
+                                                                            Padding="10"
+                                                                            FontSize="15"
+                                                                            Command="{Binding ElementName=AFF, Path=DataContext.EditTourLogCommand}"
+                                                                            CommandParameter="{Binding}" />
+
+                                                                        <Button 
+                                                                            Style="{DynamicResource HoverButton}"  
+                                                                            Grid.Row="1"
+                                                                            Content="Löschen"
+                                                                            Padding="10"
+                                                                            FontSize="15" 
+                                                                            Command="{Binding DeleteTourLogCommand}"
+                                                                            CommandParameter="{Binding}" />
+                                                                    </Grid>
+                                                                </Border>
+
+                                                            </ControlTemplate>
+                                                        </ContextMenu.Template>
+                                                    </ContextMenu>
+                                                </Button.ContextMenu>
+
                                             </Button>
+                                            -->
                                         </Grid>
                                     </Border>
                                 </DataTemplate>

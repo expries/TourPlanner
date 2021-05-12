@@ -39,6 +39,16 @@ namespace TourPlanner.BL.Services
             return Task.Run(() => SaveTour(tour));
         }
 
+        public Task<bool> DeleteTourAsync(Tour tour)
+        {
+            return Task.Run(() => DeleteTour(tour));
+        }
+
+        public Task<Tour> UpdateTourAsync(Tour tour)
+        {
+            return Task.Run(() => UpdateTour(tour));
+        }
+        
         public bool DeleteTour(Tour tour)
         {
             if (File.Exists(tour.ImagePath))
@@ -47,11 +57,6 @@ namespace TourPlanner.BL.Services
             }
             
             return this._tourRepository.DeleteTour(tour);
-        }
-
-        public Task<bool> DeleteTourAsync(Tour tour)
-        {
-            return Task.Run(() => DeleteTour(tour));
         }
 
         public List<Tour> GetTours()
@@ -78,9 +83,19 @@ namespace TourPlanner.BL.Services
                 bool descriptionContainsQuery = tour.Description.ToLower().Contains(query);
 
                 bool logContainsQuery = tour.TourLogs.Value.Any(tourLog => {
-                    bool timeFromContainsQuery = tourLog.TimeFrom.ToString().Contains(query);
-                    bool timeToContainsQuery = tourLog.TimeTo.ToString().Contains(query);
-                    return timeFromContainsQuery || timeToContainsQuery;
+                    bool timeFromContainsQuery = tourLog.Date.ToString().Contains(query);
+                    bool difficultyContainsString = tourLog.Difficulty.ToString().Contains(query);
+                    bool distanceContainsString = tourLog.Distance.ToString().Contains(query);
+                    bool durationContainsString = tourLog.Duration.ToString().Contains(query);
+                    bool ratingContainsString = tourLog.Rating.ToString().Contains(query);
+                    bool temperatureContainsString = tourLog.Temperature.ToString().Contains(query);
+                    bool weatherContainsString = tourLog.Weather.ToString().Contains(query);
+                    bool averageSpeedContainsString = tourLog.AverageSpeed.ToString().Contains(query);
+                    bool dangerLevelContainsString = tourLog.DangerLevel.ToString().Contains(query);
+                    
+                    return timeFromContainsQuery || difficultyContainsString || distanceContainsString || 
+                           durationContainsString || ratingContainsString || temperatureContainsString || 
+                           weatherContainsString || averageSpeedContainsString || dangerLevelContainsString;
                 });
 
                 return fromContainsQuery || toContainsQuery || nameContainsQuery || descriptionContainsQuery || logContainsQuery;
@@ -88,6 +103,12 @@ namespace TourPlanner.BL.Services
 
             Console.WriteLine("returning tours");
             return tours;
+        }
+
+        public Tour UpdateTour(Tour tour)
+        {
+            var newTour = this._tourRepository.SaveTour(tour);
+            return newTour;
         }
 
         public Tour SaveTour(Tour tour)

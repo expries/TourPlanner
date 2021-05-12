@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Configuration;
 using TourPlanner.Domain;
@@ -45,14 +46,38 @@ namespace TourPlanner.DAL.Repositories
                 return savedTour;
             }
 
-            if (savedTour is not null)
+            if (savedTour is null)
             {
-                DeleteTour(tour);
+                return CreateTour(tour);
             }
 
-            return CreateTour(tour);
+            return UpdateTour(tour);
         }
 
+        private Tour UpdateTour(Tour tour)
+        {
+            const string sql = "UPDATE tour SET name = @Name, locationFrom = @From, locationTo = @To, " +
+                               "description = @Description, distance = @Distance, tourType = @TourType, " +
+                               "imagePath = @ImagePath WHERE tourId = @Id";
+
+            this._connection.Execute(sql, new
+            {
+                Name = tour.Name, 
+                From = tour.From, 
+                To = tour.To, 
+                Description = tour.Description,
+                Distance = tour.Distance,
+                TourType = tour.Type,
+                ImagePath = tour.ImagePath,
+                Id = tour.TourId
+            });
+
+            var tourLogs = tour.TourLogs.Value;
+            DeleteTourLogs(tour.TourId);
+            tourLogs.ForEach(x => CreateTourLog(x, tour.TourId));
+            return GetTour(tour.TourId);
+        }
+        
         private Tour CreateTour(Tour tour)
         { 
             const string sql = "INSERT INTO tour (name, locationFrom, locationTo, description, distance, tourType, imagePath) " +
@@ -69,34 +94,66 @@ namespace TourPlanner.DAL.Repositories
                 ImagePath = tour.ImagePath
             });
 
-            var tourLogs = tour.TourLogs.Value.Select(CreateTourLog).ToList();
-            tour.TourLogs = new Lazy<List<TourLog>>(tourLogs);
-            tour.TourId = GetLatestId();
-            
-            return tour;
+            tour.TourId = GetLatestTourId();
+            tour.TourLogs.Value.ForEach(x => CreateTourLog(x, tour.TourId));
+            return GetTour(tour.TourId);
         }
 
-        private int GetLatestId()
+        private TourLog CreateTourLog(TourLog tourLog, int tourId)
+        {
+            const string sql = "INSERT INTO tour_log (date, duration, distance, rating, temperature, averageSpeed, dangerLevel, difficulty, weather, fk_tourId) " +
+                               "VALUES (@Date, @Duration, @Distance, @Rating, @Temperature, @AverageSpeed, @DangerLevel, @Difficulty, @Weather, @TourId)";
+
+            this._connection.Execute(sql, new
+            {
+                Date = tourLog.Date,
+                Duration = tourLog.Duration,
+                Distance = tourLog.Distance,
+                Rating = tourLog.Rating,
+                Temperature = tourLog.Temperature,
+                AverageSpeed = tourLog.AverageSpeed,
+                DangerLevel = tourLog.DangerLevel,  
+                Difficulty = tourLog.Difficulty,
+                Weather = tourLog.Weather,
+                TourId = tourId
+            });
+
+            tourLog.TourLogId = GetLatestTourLogId();
+            return tourLog;
+        }
+
+        private bool DeleteTourLogs(int tourId)
+        {
+            const string sql = "DELETE FROM tour_log WHERE fk_tourid = @Id";
+            int result =  this._connection.Execute(sql, new { Id = tourId });
+            return result > 0;
+        }
+
+        private int GetLatestTourId()
         {
             const string sql = "SELECT tourId FROM tour ORDER BY tourId DESC LIMIT 1;";
             var tour = this._connection.QueryFirstOrDefault<Tour>(sql);
             return tour.TourId;
         }
 
-        private TourLog CreateTourLog(TourLog tourLog)
+        private int GetLatestTourLogId()
         {
-            const string sql = "INSERT INTO tour_log (startTime, endTime, rating, fk_tourId) " +
-                               "VALUES (@TimeStart, @TimeEnd, @Rating, @TourId)";
-
-            this._connection.Execute(sql, new
-            {
-                TimeStart = tourLog.TimeFrom,
-                TimeEnd = tourLog.TimeTo,
-                Rating = tourLog.Rating,
-                TourId = tourLog.Tour.Value.TourId
-            });
-
-            return tourLog;
+            const string sql = "SELECT tourLogId FROM tour_log ORDER BY tourLogId DESC LIMIT 1;";
+            var tour = this._connection.QueryFirstOrDefault<TourLog>(sql);
+            return tour.TourLogId;
+        }
+        
+        private TourLog GetTourLog(int tourLogId)
+        {
+            const string sql = "SELECT * FROM tour_log WHERE tourLogId = @Id";
+            return this._connection.QueryFirstOrDefault<TourLog>(sql, new { Id = tourLogId });
+        }
+        
+        private bool DeleteTourLog(TourLog tourLog)
+        {
+            const string sql = "DELETE FROM tour_log WHERE tourLogId = @Id";
+            int result =  this._connection.Execute(sql, new { Id = tourLog.TourLogId });
+            return result == 1;
         }
     }
 }

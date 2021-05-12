@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Npgsql;
@@ -14,6 +13,9 @@ namespace TourPlanner.DAL
     /// </summary>
     public class DatabaseConnection
     {
+        private static readonly log4net.ILog Log = 
+            log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod()?.DeclaringType);
+
         private NpgsqlConnection Connection { get; set; }
         
         private string ConnectionString { get; set; }
@@ -69,9 +71,9 @@ namespace TourPlanner.DAL
             this.Connection = new NpgsqlConnection(this.ConnectionString);
             this.Connection.Open();
 
-            Debug.Print(cmd.CommandText);
+            Log.Debug("Executing SQL-Command: " + cmd.CommandText);
             cmd.Connection = Connection;
-            var result = cmd.ExecuteNonQuery();
+            int result = cmd.ExecuteNonQuery();
 
             this.Connection.Close();
             return result;
@@ -115,8 +117,8 @@ namespace TourPlanner.DAL
         {
             this.Connection = new NpgsqlConnection(this.ConnectionString);
             this.Connection.Open();
-
-            Debug.Print(cmd.CommandText);
+            
+            Log.Debug("Executing SQL-Query: " + cmd.CommandText);
             cmd.Connection = this.Connection;
             this._reader = cmd.ExecuteReader(CommandBehavior.KeyInfo);
             var records = GetRecords<T>(limit);
@@ -166,8 +168,8 @@ namespace TourPlanner.DAL
         {
             this.Connection = new NpgsqlConnection(this.ConnectionString);
             this.Connection.Open();
-
-            Debug.Print(cmd.CommandText);
+            
+            Log.Debug("Executing SQL-Query: " + cmd.CommandText);
             cmd.Connection = this.Connection;
             this._reader = cmd.ExecuteReader(CommandBehavior.KeyInfo);
             var record = GetNextRecord<T>(limit);

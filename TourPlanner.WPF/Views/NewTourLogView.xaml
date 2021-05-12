@@ -3,10 +3,186 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:TourPlanner.WPF.Views"
+             xmlns:converters="clr-namespace:TourPlanner.WPF.Converters" 
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
+
+    <UserControl.Resources>
+        <converters:DoubleConverter x:Key="DoubleConverter"></converters:DoubleConverter>
+        <converters:DateConverter x:Key="DateConverter"></converters:DateConverter>
+    </UserControl.Resources>
+
+    <Grid 
+        Background="white"
+        Width="400"
+        Margin="0 40 0 0">
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+
+        <Label 
+            Grid.Row="0" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Datum"
+            Margin="0 0 0 5" />
+
+        <TextBox 
+            Grid.Row="1"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource ValidatedTextbox}"
+            Text="{Binding Date, Converter={StaticResource DateConverter}, Delay=400, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Label 
+            Grid.Row="2" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Dauer [min]"
+            Margin="0 0 0 5" />
+
+        <TextBox 
+            Grid.Row="3"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource ValidatedTextbox}"
+            Text="{Binding Duration, Converter={StaticResource DoubleConverter}, Delay=400, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Label 
+            Grid.Row="4" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Distanz [km]"
+            Margin="0 0 0 5" />
+
+        <TextBox 
+            Grid.Row="5"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource ValidatedTextbox}"
+            Text="{Binding Distance, Converter={StaticResource DoubleConverter}, Delay=400, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Label 
+            Grid.Row="6" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Bewertung (1-5)"
+            Margin="0 0 0 5" />
+
+        <TextBox 
+            Grid.Row="7"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource ValidatedTextbox}"
+            Text="{Binding Rating, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Label 
+            Grid.Row="8" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Temperatur [C°]"
+            Margin="0 0 0 5" />
+
+        <TextBox 
+            Grid.Row="9"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource ValidatedTextbox}"
+            Text="{Binding Temperature, Converter={StaticResource DoubleConverter}, Delay=400, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Label 
+            Grid.Row="10" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Durchschnittsgeschwindigkeit [km/h]"
+            Margin="0 0 0 5" />
+
+        <TextBox 
+            Grid.Row="11"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource ValidatedTextbox}"
+            Text="{Binding AverageSpeed, Converter={StaticResource DoubleConverter}, Delay=400, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Label 
+            Grid.Row="12" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Gefahren-Niveau (1-5)"
+            Margin="0 0 0 5" />
+
+        <TextBox 
+            Grid.Row="13"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource ValidatedTextbox}"
+            Text="{Binding DangerLevel, UpdateSourceTrigger=PropertyChanged, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Label 
+            Grid.Row="14" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Schwierigkeit"
+            Margin="0 0 0 5" />
+
+        <ComboBox 
+            Grid.Row="15"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource RoundedBorder}"
+            ItemsSource="{Binding Difficulties}"
+            Text="{Binding Difficulty, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Label 
+            Grid.Row="16" 
+            FontWeight="Medium"
+            FontSize="14"
+            Content="Wetterbedingungen"
+            Margin="0 0 0 5" />
+
+        <ComboBox 
+            Grid.Row="17"
+            Height="32"
+            FontSize="14"
+            Padding="7"
+            Style="{DynamicResource RoundedBorder}"
+            ItemsSource="{Binding WeatherConditions}"
+            Text="{Binding Weather, ValidatesOnNotifyDataErrors=True, ValidatesOnDataErrors=True}" />
+
+        <Button 
+            Grid.Row="18"
+            Style="{DynamicResource CommandButton}"
+            Content="Tourlog speichern"
+            Margin="0 30 0 0"
+            Padding="20 10 20 10"
+            FontSize="14" 
+            Command="{Binding SaveTourLogCommand}" />
     </Grid>
 </UserControl>
