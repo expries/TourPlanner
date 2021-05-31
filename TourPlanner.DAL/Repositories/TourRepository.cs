@@ -1,60 +1,75 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
-using TourPlanner.Domain;
+﻿using System.Collections.Generic;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.DAL.Repositories
 {
     public class TourRepository : ITourRepository
     {
-        private readonly DatabaseConnection _connection;
+        private readonly IDatabaseConnection _connection;
 
-        public TourRepository(IConfiguration configuration)
+        public TourRepository(IDatabaseConnection databaseConnection)
         {
-            string connectionString = configuration.GetConnectionString("default");
-            this._connection = new DatabaseConnection(connectionString);
+            this._connection = databaseConnection;
         }
-
-        public Tour GetTour(int tourId)
+        
+        public List<Tour> GetAll()
+        {
+            const string sql = "SELECT * FROM tour";
+            return this._connection.Query<Tour>(sql);
+        }
+        
+        public Tour Get(int tourId)
         {
             const string sql = "SELECT * FROM tour WHERE tourId = @Id";
             return this._connection.QueryFirstOrDefault<Tour>(sql, new { Id = tourId });
         }
 
-        public List<Tour> GetTours()
+        public Tour Save(Tour tour)
         {
-            const string sql = "SELECT * FROM tour";
-            return this._connection.Query<Tour>(sql);
+            var savedTour = Get(tour.TourId);
+
+            if (savedTour is null)
+            {
+                return Create(tour);
+            }
+
+            if (savedTour.Equals(tour))
+            {
+                return savedTour;
+            }
+
+            return Update(tour);
         }
 
-        public bool DeleteTour(Tour tour)
+        public bool Delete(Tour tour)
         {
             const string sql = "DELETE FROM tour WHERE tourId = @Id";
             int result =  this._connection.Execute(sql, new { Id = tour.TourId });
             return result == 1;
         }
 
-        public Tour SaveTour(Tour tour)
-        {
-            var savedTour = GetTour(tour.TourId);
+        private Tour Create(Tour tour)
+        { 
+            const string sql = "INSERT INTO tour (name, locationFrom, locationTo, description, distance, tourType, imagePath) " +
+                                "VALUES (@Name, @From, @To, @Description, @Distance, @TourType, @ImagePath) " +
+                                "RETURNING tourId";
 
-            if (savedTour is not null && savedTour.Equals(tour))
+            object result = this._connection.ExecuteScalar(sql, new
             {
-                return savedTour;
-            }
+                Name = tour.Name, 
+                From = tour.From, 
+                To = tour.To, 
+                Description = tour.Description,
+                Distance = tour.Distance,
+                TourType = tour.Type,
+                ImagePath = tour.ImagePath
+            });
 
-            if (savedTour is null)
-            {
-                return CreateTour(tour);
-            }
-
-            return UpdateTour(tour);
+            tour.TourId = (int) result;
+            return tour;
         }
-
-        private Tour UpdateTour(Tour tour)
+        
+        private Tour Update(Tour tour)
         {
             const string sql = "UPDATE tour SET name = @Name, locationFrom = @From, locationTo = @To, " +
                                "description = @Description, distance = @Distance, tourType = @TourType, " +
@@ -71,89 +86,8 @@ namespace TourPlanner.DAL.Repositories
                 ImagePath = tour.ImagePath,
                 Id = tour.TourId
             });
-
-            var tourLogs = tour.TourLogs.Value;
-            DeleteTourLogs(tour.TourId);
-            tourLogs.ForEach(x => CreateTourLog(x, tour.TourId));
-            return GetTour(tour.TourId);
-        }
-        
-        private Tour CreateTour(Tour tour)
-        { 
-            const string sql = "INSERT INTO tour (name, locationFrom, locationTo, description, distance, tourType, imagePath) " +
-                                "VALUES (@Name, @From, @To, @Description, @Distance, @TourType, @ImagePath)";
-
-            this._connection.Execute(sql, new
-            {
-                Name = tour.Name, 
-                From = tour.From, 
-                To = tour.To, 
-                Description = tour.Description,
-                Distance = tour.Distance,
-                TourType = tour.Type,
-                ImagePath = tour.ImagePath
-            });
-
-            tour.TourId = GetLatestTourId();
-            tour.TourLogs.Value.ForEach(x => CreateTourLog(x, tour.TourId));
-            return GetTour(tour.TourId);
-        }
-
-        private TourLog CreateTourLog(TourLog tourLog, int tourId)
-        {
-            const string sql = "INSERT INTO tour_log (date, duration, distance, rating, temperature, averageSpeed, dangerLevel, difficulty, weather, fk_tourId) " +
-                               "VALUES (@Date, @Duration, @Distance, @Rating, @Temperature, @AverageSpeed, @DangerLevel, @Difficulty, @Weather, @TourId)";
-
-            this._connection.Execute(sql, new
-            {
-                Date = tourLog.Date,
-                Duration = tourLog.Duration,
-                Distance = tourLog.Distance,
-                Rating = tourLog.Rating,
-                Temperature = tourLog.Temperature,
-                AverageSpeed = tourLog.AverageSpeed,
-                DangerLevel = tourLog.DangerLevel,  
-                Difficulty = tourLog.Difficulty,
-                Weather = tourLog.Weather,
-                TourId = tourId
-            });
-
-            tourLog.TourLogId = GetLatestTourLogId();
-            return tourLog;
-        }
-
-        private bool DeleteTourLogs(int tourId)
-        {
-            const string sql = "DELETE FROM tour_log WHERE fk_tourid = @Id";
-            int result =  this._connection.Execute(sql, new { Id = tourId });
-            return result > 0;
-        }
-
-        private int GetLatestTourId()
-        {
-            const string sql = "SELECT tourId FROM tour ORDER BY tourId DESC LIMIT 1;";
-            var tour = this._connection.QueryFirstOrDefault<Tour>(sql);
-            return tour.TourId;
-        }
-
-        private int GetLatestTourLogId()
-        {
-            const string sql = "SELECT tourLogId FROM tour_log ORDER BY tourLogId DESC LIMIT 1;";
-            var tour = this._connection.QueryFirstOrDefault<TourLog>(sql);
-            return tour.TourLogId;
-        }
-        
-        private TourLog GetTourLog(int tourLogId)
-        {
-            const string sql = "SELECT * FROM tour_log WHERE tourLogId = @Id";
-            return this._connection.QueryFirstOrDefault<TourLog>(sql, new { Id = tourLogId });
-        }
-        
-        private bool DeleteTourLog(TourLog tourLog)
-        {
-            const string sql = "DELETE FROM tour_log WHERE tourLogId = @Id";
-            int result =  this._connection.Execute(sql, new { Id = tourLog.TourLogId });
-            return result == 1;
+            
+            return tour;
         }
     }
 }

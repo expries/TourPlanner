@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using TourPlanner.DAL.Repositories;
-using TourPlanner.DAL.Requests;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.BL.Services

@@ -5,12 +5,12 @@ namespace TourPlanner.DAL.Repositories
 {
     public interface ITourRepository
     {
-        public Tour GetTour(int tourId);
+        public List<Tour> GetAll();
         
-        public List<Tour> GetTours();
+        public Tour Get(int tourId);
+        
+        public Tour Save(Tour tour);
 
-        public bool DeleteTour(Tour tour);
-
-        public Tour SaveTour(Tour tour);
+        public bool Delete(Tour tour);
     }
 }

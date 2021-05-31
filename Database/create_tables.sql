@@ -4,7 +4,7 @@ CREATE TYPE weather_type AS ENUM ('cloudy', 'rainy', 'windy', 'sunny');
 
 CREATE TABLE tour (
     tourId SERIAL PRIMARY KEY,
-    name VARCHAR UNIQUE NOT NULL,
+    name VARCHAR NOT NULL,
     locationFrom VARCHAR NOT NULL,
     locationTo VARCHAR NOT NULL,
     tourType tour_type NOT NULL,

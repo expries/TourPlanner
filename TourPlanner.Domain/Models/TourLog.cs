@@ -9,6 +9,9 @@ namespace TourPlanner.Domain.Models
         
         [Column(Name="date")]
         public DateTime Date { get; set; }
+        
+        [Column(Name="description")]
+        public DateTime Description { get; set; }
 
         [Column(Name="duration")]
         public double Duration { get; set; }
@@ -36,5 +39,28 @@ namespace TourPlanner.Domain.Models
 
         [ManyToOne(ForeignKey="fk_tourId", Table="tour", PrimaryKey="tourID")]
         public Lazy<Tour> Tour { get; set; }
+
+        public TourLog()
+        {
+        }
+
+        public TourLog(Tour tour)
+        {
+            this.Tour = new Lazy<Tour>(() => tour);
+        }
+
+        public bool Equals(TourLog other)
+        {
+            return this.TourLogId == other.TourLogId && 
+                   this.Date.Equals(other.Date) && 
+                   this.Duration.Equals(other.Duration) && 
+                   this.Distance.Equals(other.Distance) && 
+                   this.Rating == other.Rating && 
+                   this.Temperature.Equals(other.Temperature) && 
+                   this.AverageSpeed.Equals(other.AverageSpeed) && 
+                   this.DangerLevel == other.DangerLevel && 
+                   this.Difficulty == other.Difficulty && 
+                   this.Weather == other.Weather;
+        }
     }
 }

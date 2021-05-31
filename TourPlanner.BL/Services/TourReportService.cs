@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using System.Threading.Tasks;
 using QuestPDF.Fluent;
 using TourPlanner.Domain.Documents;
@@ -7,7 +6,7 @@ using TourPlanner.Domain.Models;
 
 namespace TourPlanner.BL.Services
 {
-    public class ReportService : IReportService
+    public class TourReportService : ITourReportService
     {
         public Task CreateTourReportAsync(Tour tour, string filePath)
         {

@@ -37,7 +37,10 @@ namespace TourPlanner.WPF
             DatabaseConnection.MapEnum<WeatherCondition>("weather_type");
             
             var configuration = GetConfiguration();
+            string connectionString = configuration.GetConnectionString("default");
+            
             services.AddSingleton<IConfiguration>(_ => configuration);
+            services.AddSingleton<IDatabaseConnection>(_ => new DatabaseConnection(connectionString));
             
             services.AddSingleton<MainWindow>();
             services.AddSingleton<MainViewModel>();
@@ -48,10 +51,12 @@ namespace TourPlanner.WPF
             services.AddSingleton<INavigator, Navigator>();
 
             services.AddSingleton<ITourRepository, TourRepository>();
+            services.AddSingleton<ITourLogRepository, TourLogRepository>();
+            services.AddSingleton<IRouteImageRepository, RouteImageRepository>();
             services.AddSingleton<IMapRepository, MapRepository>();
             services.AddSingleton<ITourService, TourService>();
             services.AddSingleton<IMapService, MapService>();
-            services.AddSingleton<IReportService, ReportService>();
+            services.AddSingleton<ITourReportService, TourReportService>();
         }
         
         private static IConfigurationRoot GetConfiguration()

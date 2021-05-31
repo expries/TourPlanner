@@ -1,13 +1,19 @@
-﻿using System.ComponentModel;
-using QuestPDF.Drawing;
+﻿using QuestPDF.Drawing;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
-using SkiaSharp;
 using TourPlanner.Domain.Models;
 using IContainer = QuestPDF.Infrastructure.IContainer;
 
 namespace TourPlanner.Domain.Documents
 {
+    public static class TourReportExtension
+    {
+        public static void DoStuff(this IContainer container)
+        {
+            container.Text("dd");
+        }
+    }
+    
     public class TourReport : IDocument
     {
         public Tour Model { get; }
@@ -43,6 +49,7 @@ namespace TourPlanner.Domain.Documents
                 {
                     row.RelativeColumn().Stack(stack =>
                     {
+                        stack.Item().DoStuff();
                         stack.Item().Text($"Tour: {this.Model.Name}", TextStyle.Default.Size(20));
                         stack.Item().Text($"Von: {this.Model.From}");
                         stack.Item().Text($"Bis: {this.Model.To}");

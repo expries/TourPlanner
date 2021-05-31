@@ -16,8 +16,7 @@ namespace TourPlanner.WPF.ViewModels
             = new ConcurrentDictionary<string, List<string>>();
         
         private readonly object _validationLock = new object();
-        
-        
+
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
         
         public bool HasErrors => this._errors.Any();
@@ -47,7 +46,7 @@ namespace TourPlanner.WPF.ViewModels
                 return errors;
             }
 
-            _errors.TryGetValue(propertyName, out errors);
+            this._errors.TryGetValue(propertyName, out errors);
             return errors;
         }
 

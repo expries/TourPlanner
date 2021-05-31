@@ -57,5 +57,17 @@ namespace TourPlanner.Domain.Models
             this.ImagePath = string.Empty;
             this.TourLogs = new Lazy<List<TourLog>>();
         }
+
+        public bool Equals(Tour other)
+        {
+            return this.TourId == other.TourId &&
+                   this.Name == other.Name &&
+                   this.From == other.From &&
+                   this.To == other.To &&
+                   this.Distance.Equals(other.Distance) &&
+                   this.Type == other.Type &&
+                   this.Description == other.Description &&
+                   this.ImagePath == other.ImagePath;
+        }
     }
 }

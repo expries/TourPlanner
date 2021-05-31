@@ -21,7 +21,7 @@ namespace TourPlanner.WPF.ViewModels
         
         private readonly ITourService _tourService;
 
-        private readonly IReportService _reportService;
+        private readonly ITourReportService _tourReportService;
 
         // backing fields
         
@@ -96,10 +96,10 @@ namespace TourPlanner.WPF.ViewModels
         
         public ICommand DeleteCurrentTourCommand { get; }
 
-        public HomeViewModel(ITourService tourService, IReportService reportService)
+        public HomeViewModel(ITourService tourService, ITourReportService tourReportService)
         {
             this._tourService = tourService;
-            this._reportService = reportService;
+            this._tourReportService = tourReportService;
 
             this.SelectTourCommand = new RelayCommand(SelectTour);
             this.DeleteCurrentTourCommand = new RelayCommand(DeleteTour, _ => this.TourIsSelected);
@@ -166,7 +166,7 @@ namespace TourPlanner.WPF.ViewModels
                 return;
             }
 
-            await this._reportService.CreateTourReportAsync(this.CurrentTour, saveFileDialog.FileName);
+            await this._tourReportService.CreateTourReportAsync(this.CurrentTour, saveFileDialog.FileName);
         }
 
         private async void DeleteTourLog(object parameter)
@@ -177,9 +177,10 @@ namespace TourPlanner.WPF.ViewModels
             {
                 return;
             }
-
+            
             this.CurrentTour.TourLogs.Value.RemoveAll(x => x.TourLogId == tourLog.TourLogId);
-            this.CurrentTour = await this._tourService.UpdateTourAsync(this.CurrentTour);
+            OnPropertyChanged(nameof(CurrentTour));
+            await this._tourService.DeleteTourLogAsync(tourLog);
         }
 
         private void EditTourLog(object parameter)

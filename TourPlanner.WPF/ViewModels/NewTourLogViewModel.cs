@@ -144,32 +144,36 @@ namespace TourPlanner.WPF.ViewModels
         public NewTourLogViewModel(ITourService tourService)
         {
             this._tourService = tourService;
-
             this.SaveTourLogCommand = new RelayCommand(SaveTourLog, SaveTourLogCanExecute);
         }
 
         public override void OnNavigation(object context)
         {
-            if (context is not TourLog tourLog)
+            if (context is not TourLog && context is not Tour)
             {
-                tourLog = new TourLog();
+                return;
+            }
+            
+            if (context is Tour tour)
+            {
+                this._tour = tour;
+                this._tourLog = new TourLog(tour);
             }
 
-            if (context is not Tour tour)
+            if (context is TourLog tourLog)
             {
-                tour = tourLog.Tour.Value;
+                this._tour = tourLog.Tour.Value;
+                this._tourLog = tourLog;
             }
 
-            this._tourLog = tourLog;
-            this._tour = tour;
             Validate();
         }
 
         public async void SaveTourLog(object parameter)
         {
             this._tour.TourLogs.Value.RemoveAll(x => x.TourLogId == this._tourLog.TourLogId);
-            this._tour.TourLogs.Value.Add(this._tourLog);
-            await this._tourService.UpdateTourAsync(this._tour);
+            var log = await this._tourService.SaveTourLogAsync(this._tourLog);
+            this._tour.TourLogs.Value.Add(log);
             Navigator.Instance.UpdateCurrentViewModelCommand.Execute(ViewType.Home);
         }
 

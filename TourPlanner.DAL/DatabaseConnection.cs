@@ -8,10 +8,8 @@ using TourPlanner.Domain;
 
 namespace TourPlanner.DAL
 {
-    /// <summary>
-    /// Performs sql statements on postgres database and performs mapping of query results to entities.
-    /// </summary>
-    public class DatabaseConnection
+    
+    public class DatabaseConnection : IDatabaseConnection
     {
         private static readonly log4net.ILog Log = 
             log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod()?.DeclaringType);
@@ -37,82 +35,68 @@ namespace TourPlanner.DAL
             NpgsqlConnection.GlobalTypeMapper.MapEnum<TEnum>(name);
         }
         
-        /// <summary>
-        /// Perform non query statement. Returns the number of affected rows
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <returns></returns>
+        public object ExecuteScalar(string sql)
+        {
+            var cmd = new NpgsqlCommand(sql);
+            return ExecuteScalar(cmd);
+        }
+        
+        public object ExecuteScalar(string sql, object dataObject)
+        {
+            var cmd = BuildCommand(sql, dataObject);
+            return ExecuteScalar(cmd);
+        }
+        
+        public object ExecuteScalar(NpgsqlCommand cmd)
+        {
+            this.Connection = new NpgsqlConnection(this.ConnectionString);
+            this.Connection.Open();
+
+            Log.Debug("Executing SQL-Command: " + cmd.CommandText);
+            cmd.Connection = this.Connection;
+            var result = cmd.ExecuteScalar();
+
+            this.Connection.Close();
+            return result;
+        }
+        
         public int Execute(string sql)
         {
             var cmd = new NpgsqlCommand(sql);
             return Execute(cmd);
         }
-
-        /// <summary>
-        /// Perform non query statement. Returns the number of affected rows
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <param name="dataObject"></param>
-        /// <returns></returns>
+        
         public int Execute(string sql, object dataObject)
         {
             var cmd = BuildCommand(sql, dataObject);
             return Execute(cmd);
         }
-
-        /// <summary>
-        /// Perform non query statement. Returns the number of affected rows
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <param name="cmd"></param>
-        /// <returns></returns>
+        
         public int Execute(NpgsqlCommand cmd)
         {
             this.Connection = new NpgsqlConnection(this.ConnectionString);
             this.Connection.Open();
 
             Log.Debug("Executing SQL-Command: " + cmd.CommandText);
-            cmd.Connection = Connection;
+            cmd.Connection = this.Connection;
             int result = cmd.ExecuteNonQuery();
 
             this.Connection.Close();
             return result;
         }
         
-        /// <summary>
-        /// Map result rows for a given query to a list of entities.
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <param name="limit"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public List<T> Query<T>(string sql, int limit = 100) where T : new()
         {
             var cmd = new NpgsqlCommand(sql);
             return Query<T>(cmd, limit);
         }
-
-        /// <summary>
-        /// Map result rows for a given query to a list of entities.
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <param name="dataObject"></param>
-        /// <param name="limit"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        
         public List<T> Query<T>(string sql, object dataObject, int limit = 100) where T : new()
         {
             var cmd = BuildCommand(sql, dataObject);
             return Query<T>(cmd, limit);
         }
-
-        /// <summary>
-        /// Map result rows for a given query to a list of entities
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="limit"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        
         public List<T> Query<T>(NpgsqlCommand cmd, int limit = 100) where T : new()
         {
             this.Connection = new NpgsqlConnection(this.ConnectionString);
@@ -128,13 +112,6 @@ namespace TourPlanner.DAL
             return records;
         }
         
-        /// <summary>
-        /// Map first result rows for a given query to an entity
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="limit"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public T QueryFirstOrDefault<T>(string sql, int limit = 100) where T : new()
         {
             var cmd = new NpgsqlCommand(sql);
@@ -143,27 +120,12 @@ namespace TourPlanner.DAL
 
         }
         
-        /// <summary>
-        /// Map first result rows for a given query to an entity
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <param name="dataObject"></param>
-        /// <param name="limit"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public T QueryFirstOrDefault<T>(string sql, object dataObject, int limit = 100) where T : new()
         {
             var cmd = BuildCommand(sql, dataObject);
             return QueryFirstOrDefault<T>(cmd, limit);
         }
-
-        /// <summary>
-        /// Map first result rows for a given query to an entity
-        /// </summary>
-        /// <param name="cmd"></param>
-        /// <param name="limit"></param>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
+        
         public T QueryFirstOrDefault<T>(NpgsqlCommand cmd, int limit = 100) where T : new()
         {
             this.Connection = new NpgsqlConnection(this.ConnectionString);
@@ -281,56 +243,41 @@ namespace TourPlanner.DAL
         /// <typeparam name="T"></typeparam>
         private void MapOneToMany<T>(T record, PropertyInfo property, OneToManyAttribute oneToMany, int limit)
         {
-            // find entity type to map to (should be nested in a list) 
-            var nestedType = property?.PropertyType.GenericTypeArguments.FirstOrDefault();
+            // find nested type of list
+            var type = property?.PropertyType.GenericTypeArguments.FirstOrDefault();
 
-            if (nestedType is null)
+            if (type is null)
             {
                 return;
             }
 
-            bool lazy = property?.PropertyType.AssemblyQualifiedName?.StartsWith("System.Lazy") ?? false;
+            // if lazy find nested type of lazy
+            bool lazy = property.PropertyType.AssemblyQualifiedName?.StartsWith("System.Lazy") ?? false;
 
             if (lazy)
             {
-                nestedType = nestedType.GenericTypeArguments.FirstOrDefault() ?? nestedType;
+                type = type.GenericTypeArguments.FirstOrDefault() ?? type;
             }
+            
 
-            // find the primary key column
-            var schema = this._reader.GetColumnSchema();
-            var keyColumn = schema.FirstOrDefault(x => x?.IsKey ?? false);
+            // get the primary key
+            object primaryKey = GetPrimaryKey();
 
-            if (keyColumn?.ColumnOrdinal is null)
+            if (primaryKey is null)
             {
                 return;
             }
 
-            int keyColumnOrdinal = (int) keyColumn.ColumnOrdinal;
-            var rowKey = this._reader.GetValue(keyColumnOrdinal);
-            
             // build query to find foreign key entries
             string sql = $"SELECT * FROM {oneToMany.Table} WHERE {oneToMany.ForeignKey} = @key";
             var cmd = new NpgsqlCommand(sql);
-            cmd.Parameters.AddWithValue("key", rowKey);
+            cmd.Parameters.AddWithValue("key", primaryKey);
             
-            object result;
-
             // if using lazy list => create lazy list that holds query-method
-            if (lazy)
-            {
-                const BindingFlags methodFlags = BindingFlags.NonPublic | BindingFlags.Instance;
-                var lazyListMethod = GetType().GetMethod(nameof(BuildLazyList), methodFlags);
-                var lazyListMethodInfo = lazyListMethod?.MakeGenericMethod(nestedType);
-                result = lazyListMethodInfo?.Invoke(this, new object[] { cmd, limit });
-            }
-            // if using "normal" list => perform query immediately and update list with rows
-            else
-            {
-                var queryParameterTypes = new Type[] { typeof(NpgsqlCommand), typeof(int) };
-                var queryMethod = GetType().GetMethod(nameof(Query), queryParameterTypes);
-                var queryMethodInfo = queryMethod?.MakeGenericMethod(nestedType);
-                result = queryMethodInfo?.Invoke(Copy(), new object[] { cmd, limit });
-            }
+            // if using non-lazy list => perform query immediately and update list with rows
+            object result = lazy 
+                ? GetLazyQuery(type, nameof(BuildLazyList), cmd, limit) 
+                : ExecuteQuery(type, nameof(Query), cmd, limit);
 
             property.SetValue(record, result);
         }
@@ -344,57 +291,77 @@ namespace TourPlanner.DAL
         /// <typeparam name="T"></typeparam>
         private void MapManyToOne<T>(T record, PropertyInfo property, ManyToOneAttribute manyToOne, int limit)
         {
-            // find entity type to map to (should be nested in a list) 
+            // if lazy find nested type of lazy
             var type = property.PropertyType;
-            bool lazy = property?.PropertyType.AssemblyQualifiedName?.StartsWith("System.Lazy") ?? false;
+            bool lazy = property.PropertyType.AssemblyQualifiedName?.StartsWith("System.Lazy") ?? false;
 
             if (lazy)
             {
                 type = type.GenericTypeArguments.FirstOrDefault() ?? type;
             }
             
-            // find foreign key column
-            var columnSchema = this._reader.GetColumnSchema();
-            var foreignKeyColumn = columnSchema.FirstOrDefault(x =>
-            {
-                return string.Equals(x.ColumnName, manyToOne.ForeignKey, StringComparison.CurrentCultureIgnoreCase);
-            });
-
-            if (foreignKeyColumn?.ColumnOrdinal is null)
+            // get the foreign key
+            object foreignKey = GetForeignKey(manyToOne);
+            
+            if (foreignKey is null)
             {
                 return;
             }
 
-            int keyColumnOrdinal = (int) foreignKeyColumn.ColumnOrdinal;
-            var foreignKey = this._reader.GetValue(keyColumnOrdinal);
-            
             // build query to find matching entry in other table
             string sql = $"SELECT * FROM {manyToOne.Table} WHERE {manyToOne.PrimaryKey} = @key";
             var cmd = new NpgsqlCommand(sql);
             cmd.Parameters.AddWithValue("key", foreignKey);
-
-            object result;
             
             // if using lazy list => create lazy list that holds query-method
-            if (lazy)
-            {
-                const BindingFlags methodFlags = BindingFlags.NonPublic | BindingFlags.Instance;
-                var lazyListMethod = GetType().GetMethod(nameof(BuildLazyEntity), methodFlags);
-                var lazyListMethodInfo = lazyListMethod?.MakeGenericMethod(type);
-                result = lazyListMethodInfo?.Invoke(this, new object[] { cmd, limit });
-            }
-            // if using "normal" list => perform query immediately and update list with rows
-            else
-            {
-                var queryParameterTypes = new Type[] { typeof(NpgsqlCommand), typeof(int) };
-                var queryMethod = GetType().GetMethod(nameof(QueryFirstOrDefault), queryParameterTypes);
-                var queryMethodInfo = queryMethod?.MakeGenericMethod(type);
-                result = queryMethodInfo?.Invoke(Copy(), new object[] { cmd, limit });
-            }
+            // if using non-lazy list => perform query immediately and update list with rows
+            object result = lazy 
+                ? GetLazyQuery(type, nameof(BuildLazyEntity), cmd, limit) 
+                : ExecuteQuery(type, nameof(QueryFirstOrDefault), cmd, limit);
             
             property.SetValue(record, result);
         }
+        
+        /// <summary>
+        /// Returns value of primary key for current row
+        /// </summary>
+        /// <returns></returns>
+        private object GetPrimaryKey()
+        {
+            var schema = this._reader.GetColumnSchema();
+            var keyColumn = schema.FirstOrDefault(x => x?.IsKey ?? false);
 
+            if (keyColumn?.ColumnOrdinal is null)
+            {
+                return null;
+            }
+
+            int keyColumnOrdinal = (int) keyColumn.ColumnOrdinal;
+            object primaryKey = this._reader.GetValue(keyColumnOrdinal);
+            return primaryKey;
+        }
+
+        /// <summary>
+        /// Returns value of foreign key of  for current row
+        /// </summary>
+        /// <param name="manyToOne"></param>
+        /// <returns></returns>
+        private object GetForeignKey(ManyToOneAttribute manyToOne)
+        {
+            var columnSchema = this._reader.GetColumnSchema();
+            var foreignKeyColumn = columnSchema.FirstOrDefault(x => 
+                string.Equals(x.ColumnName, manyToOne.ForeignKey, StringComparison.CurrentCultureIgnoreCase));
+
+            if (foreignKeyColumn?.ColumnOrdinal is null)
+            {
+                return null;
+            }
+
+            int keyColumnOrdinal = (int) foreignKeyColumn.ColumnOrdinal;
+            object foreignKey = this._reader.GetValue(keyColumnOrdinal);
+            return foreignKey;
+        }
+        
         /// <summary>
         /// Returns dictionary that holds the table's column names as keys and the current row values as values
         /// </summary>
@@ -412,7 +379,7 @@ namespace TourPlanner.DAL
                 }
 
                 int ordinal = column.ColumnOrdinal.Value;
-                var value = this._reader.GetValue(ordinal);
+                object value = this._reader.GetValue(ordinal);
                 string columnName = column.ColumnName.ToLower();
                 row[columnName] = value;
             }
@@ -442,7 +409,39 @@ namespace TourPlanner.DAL
 
             return cmd;
         }
-        
+
+        /// <summary>
+        /// Get a lazy query for type to be executed later on
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="methodName"></param>
+        /// <param name="cmd"></param>
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        private object GetLazyQuery(Type type, string methodName, NpgsqlCommand cmd, int limit)
+        {
+            const BindingFlags methodFlags = BindingFlags.NonPublic | BindingFlags.Instance;
+            var lazyListMethod = GetType().GetMethod(methodName, methodFlags);
+            var lazyListMethodInfo = lazyListMethod?.MakeGenericMethod(type);
+            return lazyListMethodInfo?.Invoke(this, new object[] { cmd, limit });
+        }
+
+        /// <summary>
+        /// Execute query for type and return results
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="methodName"></param>
+        /// <param name="cmd"></param>
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        private object ExecuteQuery(Type type, string methodName, NpgsqlCommand cmd, int limit)
+        {
+            var queryParameterTypes = new Type[] { typeof(NpgsqlCommand), typeof(int) };
+            var queryMethod = GetType().GetMethod(methodName, queryParameterTypes);
+            var queryMethodInfo = queryMethod?.MakeGenericMethod(type);
+            return queryMethodInfo?.Invoke(Copy(), new object[] { cmd, limit });
+        }
+
         /// <summary>
         /// Provide function to perform query to a lazy entity. The lazy entity will only perform the query
         /// once its values are accessed.
@@ -453,12 +452,7 @@ namespace TourPlanner.DAL
         /// <returns></returns>
         private Lazy<T> BuildLazyEntity<T>(NpgsqlCommand cmd, int limit) where T : new()
         {
-            return new Lazy<T>(() =>
-            {
-                var dbManager = Copy();
-                var entity = dbManager.QueryFirstOrDefault<T>(cmd, limit);
-                return entity;
-            });
+            return new Lazy<T>(() => Copy().QueryFirstOrDefault<T>(cmd, limit));
         }
         
         /// <summary>
@@ -471,12 +465,7 @@ namespace TourPlanner.DAL
         /// <returns></returns>
         private Lazy<List<T>> BuildLazyList<T>(NpgsqlCommand cmd, int limit) where T : new()
         {
-            return new Lazy<List<T>>(() =>
-            {
-                var dbManager = Copy();
-                var list = dbManager.Query<T>(cmd, limit);
-                return list;
-            });
+            return new Lazy<List<T>>(() => Copy().Query<T>(cmd, limit));
         }
 
         /// <summary>

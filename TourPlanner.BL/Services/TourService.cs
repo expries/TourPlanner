@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using TourPlanner.DAL.Repositories;
 using TourPlanner.Domain.Models;
 
@@ -13,15 +10,19 @@ namespace TourPlanner.BL.Services
     {
         private readonly ITourRepository _tourRepository;
 
+        private readonly ITourLogRepository _tourLogRepository;
+
         private readonly IMapRepository _mapRepository;
 
-        private readonly string _imageDirectory;
+        private readonly IRouteImageRepository _imageRepository;
 
-        public TourService(ITourRepository tourRepository, IMapRepository mapRepository, IConfiguration configuration)
+        public TourService(ITourRepository tourRepository, ITourLogRepository tourLogRepository, 
+                           IMapRepository mapRepository, IRouteImageRepository routeImageRepository)
         {
             this._tourRepository = tourRepository;
+            this._tourLogRepository = tourLogRepository;
             this._mapRepository = mapRepository;
-            this._imageDirectory = configuration.GetSection("Paths")["ImageDirectory"];
+            this._imageRepository = routeImageRepository;
         }
 
         public Task<List<Tour>> GetToursAsync()
@@ -38,35 +39,30 @@ namespace TourPlanner.BL.Services
         {
             return Task.Run(() => SaveTour(tour));
         }
+        
+        public Task<TourLog> SaveTourLogAsync(TourLog tourLog)
+        {
+            return Task.Run(() => SaveTourLog(tourLog));
+        }
 
-        public Task<bool> DeleteTourAsync(Tour tour)
+        public Task DeleteTourAsync(Tour tour)
         {
             return Task.Run(() => DeleteTour(tour));
         }
 
-        public Task<Tour> UpdateTourAsync(Tour tour)
+        public Task DeleteTourLogAsync(TourLog tourLog)
         {
-            return Task.Run(() => UpdateTour(tour));
-        }
-        
-        public bool DeleteTour(Tour tour)
-        {
-            if (File.Exists(tour.ImagePath))
-            {
-                File.Delete(tour.ImagePath);
-            }
-            
-            return this._tourRepository.DeleteTour(tour);
+            return Task.Run(() => DeleteTourLog(tourLog));
         }
 
         public List<Tour> GetTours()
         {
-            return this._tourRepository.GetTours();
+            return this._tourRepository.GetAll();
         }
         
         public List<Tour> FindTours(string query)
         {
-            var tours = this._tourRepository.GetTours();
+            var tours = this._tourRepository.GetAll();
 
             if (string.IsNullOrWhiteSpace(query))
             {
@@ -74,7 +70,6 @@ namespace TourPlanner.BL.Services
             }
 
             query = query.ToLower();
-            Console.WriteLine(query);
 
             tours = tours.FindAll(tour => {
                 bool fromContainsQuery = tour.From.ToLower().Contains(query);
@@ -100,49 +95,34 @@ namespace TourPlanner.BL.Services
 
                 return fromContainsQuery || toContainsQuery || nameContainsQuery || descriptionContainsQuery || logContainsQuery;
             });
-
-            Console.WriteLine("returning tours");
+            
             return tours;
-        }
-
-        public Tour UpdateTour(Tour tour)
-        {
-            var newTour = this._tourRepository.SaveTour(tour);
-            return newTour;
         }
 
         public Tour SaveTour(Tour tour)
         {
-            // clean up old tour if updating
-            var savedTour = this._tourRepository.GetTour(tour.TourId);
+            // clean up old image if updating
+            var savedTour = this._tourRepository.Get(tour.TourId);
 
-            if (savedTour is not null && File.Exists(savedTour.ImagePath))
+            if (savedTour is not null)
             {
-                File.Delete(savedTour.ImagePath);
+                this._imageRepository.Delete(savedTour.ImagePath);
             }
             
             // query api
-            var route = this._mapRepository.GetDirection(tour.From, tour.To);
-            tour.Distance = route.Route.Distance;
+            var routeResponse = this._mapRepository.GetRoute(tour.From, tour.To);
+            var route = routeResponse.Route;
+            tour.Distance = route.Distance;
 
-            if (route.Info.Statuscode != 0)
+            if (routeResponse.Info.Statuscode != 0)
             {
                 return new Tour();
             }
 
-            byte[] imageData = this._mapRepository.GetImage(route.Route.SessionId, route.Route.BoundingBox, 400, 300);
+            byte[] imageData = this._mapRepository.GetImage(route.SessionId, route.BoundingBox, 400, 300);
 
             // save image
-            string imagePath;
-
-            do
-            {
-                imagePath = this._imageDirectory + "\\" + Guid.NewGuid() + ".png";
-            } 
-            while (File.Exists(imagePath));
-            
-            File.WriteAllBytes(imagePath, imageData);
-            tour.ImagePath = imagePath;
+            tour.ImagePath = this._imageRepository.Save(imageData);
 
             if (string.IsNullOrEmpty(tour.Description))
             {
@@ -150,8 +130,28 @@ namespace TourPlanner.BL.Services
             }
             
             // save tour to db
-            var newTour = this._tourRepository.SaveTour(tour);
-            return newTour;
+            return this._tourRepository.Save(tour);
+        }
+        
+        public TourLog SaveTourLog(TourLog tourLog)
+        {
+            return this._tourLogRepository.Save(tourLog);
+        }
+        
+        public void DeleteTour(Tour tour)
+        {
+            if (this._imageRepository.Get(tour.ImagePath) is not null)
+            {
+                this._imageRepository.Delete(tour.ImagePath);
+            }
+            
+            this._tourLogRepository.DeleteByTour(tour);
+            this._tourRepository.Delete(tour);
+        }
+
+        public void DeleteTourLog(TourLog tourLog)
+        {
+            this._tourLogRepository.Delete(tourLog);
         }
     }
 }

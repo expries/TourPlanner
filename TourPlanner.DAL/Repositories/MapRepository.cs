@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using TourPlanner.DAL.Requests;
 
@@ -15,7 +14,7 @@ namespace TourPlanner.DAL.Repositories
         {
             var api = configuration.GetSection("Api");
             this._apiKey = api.GetValue<string>("Key");
-            this._baseUrl = api.GetValue<string>("baseUrl");
+            this._baseUrl = api.GetValue<string>("BaseUrl");
         }
         
         public LocationResponse FindLocation(string locationFrom, string locationTo)
@@ -27,7 +26,7 @@ namespace TourPlanner.DAL.Repositories
             return response;
         }
 
-        public DirectionResponse GetDirection(string locationFrom, string locationTo)
+        public DirectionResponse GetRoute(string locationFrom, string locationTo)
         {
             string url = $"{this._baseUrl}/directions/v2/route?key={this._apiKey}";
             var request = new DirectionRequest();
@@ -40,7 +39,7 @@ namespace TourPlanner.DAL.Repositories
         {
             string boundingBoxString = $"{boundingBox.Lr.ToString()},{boundingBox.Ul.ToString()}";
             string url = $"{this._baseUrl}/staticmap/v5/map?session={sessionId}&boundingBox={boundingBoxString}&size={width},{height}@2x&key={this._apiKey}";
-            var response = HttpConnection.GetBytes(url);
+            byte[] response = HttpConnection.GetBytes(url);
             return response;
         }
     }

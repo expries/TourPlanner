@@ -6,24 +6,29 @@ namespace TourPlanner.BL.Services
 {
     public interface ITourService
     {
-        public List<Tour> GetTours();
-
         public Task<List<Tour>> GetToursAsync();
 
-        public List<Tour> FindTours(string query);
-
         public Task<List<Tour>> FindToursAsync(string query);
-
-        public Tour SaveTour(Tour tour);
-
+        
         public Task<Tour> SaveTourAsync(Tour tour);
 
-        public bool DeleteTour(Tour tour);
+        public Task<TourLog> SaveTourLogAsync(TourLog tourLog);
+        
+        public Task DeleteTourAsync(Tour tour);
 
-        public Task<bool> DeleteTourAsync(Tour tour);
+        public Task DeleteTourLogAsync(TourLog tourLog);
+        
 
-        public Task<Tour> UpdateTourAsync(Tour tour);
+        public List<Tour> GetTours();
+        
+        public List<Tour> FindTours(string query);
+        
+        public Tour SaveTour(Tour tour);
+        
+        public TourLog SaveTourLog(TourLog tourLog);
 
-        public Tour UpdateTour(Tour tour);
+        public void DeleteTour(Tour tour);
+
+        public void DeleteTourLog(TourLog tourLog);
     }
 }

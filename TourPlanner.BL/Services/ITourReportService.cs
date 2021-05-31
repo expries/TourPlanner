@@ -3,7 +3,7 @@ using TourPlanner.Domain.Models;
 
 namespace TourPlanner.BL.Services
 {
-    public interface IReportService
+    public interface ITourReportService
     {
         public Task CreateTourReportAsync(Tour tour, string filePath);
 
