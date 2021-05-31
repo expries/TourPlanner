@@ -154,19 +154,7 @@ namespace TourPlanner.WPF.ViewModels
         private async void CreateReport(object parameter)
         {
             Log.Debug("Create report was triggered.");
-            
-            var saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Pdf|*.pdf";
-            saveFileDialog.Title = "Speicherort für den Tourreport auswählen ...";
-            saveFileDialog.ShowDialog();
-
-            if (string.IsNullOrEmpty(saveFileDialog.FileName))
-            {
-                Log.Error("received file path for report creation.");
-                return;
-            }
-
-            await this._tourReportService.CreateTourReportAsync(this.CurrentTour, saveFileDialog.FileName);
+            await this._tourReportService.CreateTourReportAsync(this.CurrentTour);
         }
 
         private async void DeleteTourLog(object parameter)

@@ -188,7 +188,7 @@ namespace TourPlanner.WPF.ViewModels
             this.ToSuggestions = locationsTo.Select(x => x.FullName).ToList();
             
             this.Locations.Clear();
-            locationsFrom.ForEach(x => this.Locations[x.FullName] =  x);
+            locationsFrom.ForEach(x => this.Locations[x.FullName] = x);
             locationsTo.ForEach(x => this.Locations[x.FullName] = x);
         }
 

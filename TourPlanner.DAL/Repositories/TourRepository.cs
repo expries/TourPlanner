@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Npgsql;
+using TourPlanner.Domain.Exceptions;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.DAL.Repositories
@@ -14,14 +17,28 @@ namespace TourPlanner.DAL.Repositories
         
         public List<Tour> GetAll()
         {
-            const string sql = "SELECT * FROM tour";
-            return this._connection.Query<Tour>(sql);
+            try
+            {
+                const string sql = "SELECT * FROM tour";
+                return this._connection.Query<Tour>(sql);
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new DataAccessException("Failed to get all tours", ex);
+            }
         }
         
         public Tour Get(int tourId)
         {
-            const string sql = "SELECT * FROM tour WHERE tourId = @Id";
-            return this._connection.QueryFirstOrDefault<Tour>(sql, new { Id = tourId });
+            try
+            {
+                const string sql = "SELECT * FROM tour WHERE tourId = @Id";
+                return this._connection.QueryFirstOrDefault<Tour>(sql, new { Id = tourId });
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new DataAccessException("Failed to get tour with id " + tourId, ex);
+            }
         }
 
         public Tour Save(Tour tour)
@@ -44,8 +61,16 @@ namespace TourPlanner.DAL.Repositories
         public bool Delete(Tour tour)
         {
             const string sql = "DELETE FROM tour WHERE tourId = @Id";
-            int result =  this._connection.Execute(sql, new { Id = tour.TourId });
-            return result == 1;
+            
+            try
+            {
+                int result =  this._connection.Execute(sql, new { Id = tour.TourId });
+                return result == 1;
+            } 
+            catch (NpgsqlException ex)
+            {
+                throw new DataAccessException("Failed to delete tour", ex);
+            }
         }
 
         private Tour Create(Tour tour)
@@ -54,19 +79,26 @@ namespace TourPlanner.DAL.Repositories
                                 "VALUES (@Name, @From, @To, @Description, @Distance, @TourType, @ImagePath) " +
                                 "RETURNING tourId";
 
-            object result = this._connection.ExecuteScalar(sql, new
+            try
             {
-                Name = tour.Name, 
-                From = tour.From, 
-                To = tour.To, 
-                Description = tour.Description,
-                Distance = tour.Distance,
-                TourType = tour.Type,
-                ImagePath = tour.ImagePath
-            });
+                object result = this._connection.ExecuteScalar(sql, new
+                {
+                    Name = tour.Name,
+                    From = tour.From,
+                    To = tour.To,
+                    Description = tour.Description,
+                    Distance = tour.Distance,
+                    TourType = tour.Type,
+                    ImagePath = tour.ImagePath
+                });
 
-            tour.TourId = (int) result;
-            return tour;
+                tour.TourId = (int) result;
+                return tour;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new DataAccessException("Failed to create tour", ex);
+            }
         }
         
         private Tour Update(Tour tour)
@@ -75,19 +107,26 @@ namespace TourPlanner.DAL.Repositories
                                "description = @Description, distance = @Distance, tourType = @TourType, " +
                                "imagePath = @ImagePath WHERE tourId = @Id";
 
-            this._connection.Execute(sql, new
+            try
             {
-                Name = tour.Name, 
-                From = tour.From, 
-                To = tour.To, 
-                Description = tour.Description,
-                Distance = tour.Distance,
-                TourType = tour.Type,
-                ImagePath = tour.ImagePath,
-                Id = tour.TourId
-            });
-            
-            return tour;
+                this._connection.Execute(sql, new
+                {
+                    Name = tour.Name,
+                    From = tour.From,
+                    To = tour.To,
+                    Description = tour.Description,
+                    Distance = tour.Distance,
+                    TourType = tour.Type,
+                    ImagePath = tour.ImagePath,
+                    Id = tour.TourId
+                });
+
+                return tour;
+            }
+            catch (NpgsqlException ex)
+            {
+                throw new DataAccessException("Failed to update tour", ex);
+            }
         }
     }
 }

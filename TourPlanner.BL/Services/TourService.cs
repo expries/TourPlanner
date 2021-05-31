@@ -1,7 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using TourPlanner.DAL.Repositories;
+using TourPlanner.Domain.Exceptions;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.BL.Services
@@ -15,6 +18,9 @@ namespace TourPlanner.BL.Services
         private readonly IMapRepository _mapRepository;
 
         private readonly IRouteImageRepository _imageRepository;
+        
+        private static readonly log4net.ILog Log = 
+            log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod()?.DeclaringType);
 
         public TourService(ITourRepository tourRepository, ITourLogRepository tourLogRepository, 
                            IMapRepository mapRepository, IRouteImageRepository routeImageRepository)
@@ -57,101 +63,158 @@ namespace TourPlanner.BL.Services
 
         public List<Tour> GetTours()
         {
-            return this._tourRepository.GetAll();
+            try
+            {
+                return this._tourRepository.GetAll();
+            }
+            catch (DataAccessException ex)
+            {
+                Log.Error($"Failed to get tours: {ex.Message}");
+                throw new BusinessException("Failed to get tours", ex);
+            }
         }
         
         public List<Tour> FindTours(string query)
         {
-            var tours = this._tourRepository.GetAll();
-
-            if (string.IsNullOrWhiteSpace(query))
+            try
             {
-                return tours;
-            }
+                Log.Debug($"Searching for tours with query '{query}'");
+                
+                var tours = this._tourRepository.GetAll();
 
-            query = query.ToLower();
+                if (string.IsNullOrWhiteSpace(query))
+                {
+                    return tours;
+                }
 
-            tours = tours.FindAll(tour => {
-                bool fromContainsQuery = tour.From.ToLower().Contains(query);
-                bool toContainsQuery = tour.To.ToLower().Contains(query);
-                bool nameContainsQuery = tour.Name.ToLower().Contains(query);
-                bool descriptionContainsQuery = tour.Description.ToLower().Contains(query);
+                query = query.ToLower();
 
-                bool logContainsQuery = tour.TourLogs.Value.Any(tourLog => {
-                    bool timeFromContainsQuery = tourLog.Date.ToString().Contains(query);
-                    bool difficultyContainsString = tourLog.Difficulty.ToString().Contains(query);
-                    bool distanceContainsString = tourLog.Distance.ToString().Contains(query);
-                    bool durationContainsString = tourLog.Duration.ToString().Contains(query);
-                    bool ratingContainsString = tourLog.Rating.ToString().Contains(query);
-                    bool temperatureContainsString = tourLog.Temperature.ToString().Contains(query);
-                    bool weatherContainsString = tourLog.Weather.ToString().Contains(query);
-                    bool averageSpeedContainsString = tourLog.AverageSpeed.ToString().Contains(query);
-                    bool dangerLevelContainsString = tourLog.DangerLevel.ToString().Contains(query);
+                tours = tours.FindAll(tour =>
+                {
+                    var tourMatches = new List<bool>
+                    {
+                        tour.From.ToLower().Contains(query),
+                        tour.To.ToLower().Contains(query),
+                        tour.Name.ToLower().Contains(query),
+                        tour.Description.ToLower().Contains(query),
+                    };
+                        
+                    var logMatchLists = tour.TourLogs.Value.Select(tourLog => new List<bool>
+                    {
+                        tourLog.Date.ToString().Contains(query),
+                        tourLog.Difficulty.ToString().Contains(query),
+                        tourLog.Distance.ToString().Contains(query),
+                        tourLog.Duration.ToString().Contains(query),
+                        tourLog.Rating.ToString().Contains(query),
+                        tourLog.Temperature.ToString().Contains(query),
+                        tourLog.Weather.ToString().Contains(query),
+                        tourLog.AverageSpeed.ToString().Contains(query),
+                        tourLog.DangerLevel.ToString().Contains(query),
+                    });
                     
-                    return timeFromContainsQuery || difficultyContainsString || distanceContainsString || 
-                           durationContainsString || ratingContainsString || temperatureContainsString || 
-                           weatherContainsString || averageSpeedContainsString || dangerLevelContainsString;
+                    return tourMatches.Any() || logMatchLists.Any(logMatches => logMatches.Any());
                 });
-
-                return fromContainsQuery || toContainsQuery || nameContainsQuery || descriptionContainsQuery || logContainsQuery;
-            });
-            
-            return tours;
+                
+                Log.Debug($"Search returned {tours.Count} tours");
+                return tours;   
+            }
+            catch (DataAccessException ex)
+            {
+                Log.Error($"Failed to search for tour: {ex.Message}");
+                throw new BusinessException("Failed to search for tours", ex);
+            }
         }
 
         public Tour SaveTour(Tour tour)
         {
-            // clean up old image if updating
-            var savedTour = this._tourRepository.Get(tour.TourId);
-
-            if (savedTour is not null)
+            try
             {
-                this._imageRepository.Delete(savedTour.ImagePath);
-            }
+                // clean up old image if updating
+                var savedTour = this._tourRepository.Get(tour.TourId);
+
+                if (savedTour is not null)
+                {
+                    this._imageRepository.Delete(savedTour.ImagePath);
+                }
             
-            // query api
-            var routeResponse = this._mapRepository.GetRoute(tour.From, tour.To);
-            var route = routeResponse.Route;
-            tour.Distance = route.Distance;
+                // query api
+                var routeResponse = this._mapRepository.GetRoute(tour.From, tour.To);
+                var route = routeResponse.Route;
+                tour.Distance = route.Distance;
 
-            if (routeResponse.Info.Statuscode != 0)
-            {
-                return new Tour();
-            }
+                if (routeResponse.Info.Statuscode != 0)
+                {
+                    throw new BusinessException("Could not find route for the given locations");
+                }
 
-            byte[] imageData = this._mapRepository.GetImage(route.SessionId, route.BoundingBox, 400, 300);
+                byte[] imageData = this._mapRepository.GetImage(route.SessionId, route.BoundingBox, 400, 300);
 
-            // save image
-            tour.ImagePath = this._imageRepository.Save(imageData);
+                // save image
+                tour.ImagePath = this._imageRepository.Save(imageData);
 
-            if (string.IsNullOrEmpty(tour.Description))
-            {
-                tour.Description = "Keine Beschreibung";
-            }
+                if (string.IsNullOrEmpty(tour.Description))
+                {
+                    tour.Description = "Keine Beschreibung";
+                }
             
-            // save tour to db
-            return this._tourRepository.Save(tour);
+                // save tour to db
+                return this._tourRepository.Save(tour);   
+            }
+            catch (DataAccessException ex)
+            {
+                Log.Error($"Failed to save tour: {ex.Message}");
+                throw new BusinessException("Failed to save tour", ex);
+            }
         }
         
         public TourLog SaveTourLog(TourLog tourLog)
         {
-            return this._tourLogRepository.Save(tourLog);
+            try
+            {
+                if (tourLog.Tour.Value is null)
+                {
+                    throw new BusinessException("Tour log is not associated with tour");
+                }
+                
+                return this._tourLogRepository.Save(tourLog);
+            }
+            catch (DataAccessException ex)
+            {
+                Log.Error($"Failed to search for tour log: {ex.Message}");
+                throw new BusinessException("Failed to save tour log", ex);
+            }
         }
         
         public void DeleteTour(Tour tour)
         {
-            if (this._imageRepository.Get(tour.ImagePath) is not null)
+            try
             {
-                this._imageRepository.Delete(tour.ImagePath);
+                if (this._imageRepository.Get(tour.ImagePath) is not null)
+                {
+                    this._imageRepository.Delete(tour.ImagePath);
+                }
+
+                this._tourLogRepository.DeleteByTour(tour);
+                this._tourRepository.Delete(tour);
             }
-            
-            this._tourLogRepository.DeleteByTour(tour);
-            this._tourRepository.Delete(tour);
+            catch (DataAccessException ex)
+            {
+                Log.Error($"Failed delete tour: {ex.Message}");
+                throw new BusinessException("Failed to delete tour", ex);
+            }
         }
 
         public void DeleteTourLog(TourLog tourLog)
         {
-            this._tourLogRepository.Delete(tourLog);
+            try
+            {
+                this._tourLogRepository.Delete(tourLog);
+            }
+            catch (DataAccessException ex)
+            {
+                Log.Error($"Failed to search for tour log: {ex.Message}");
+                throw new BusinessException("Failed to delete tour log", ex);
+            }
         }
     }
 }

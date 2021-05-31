@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using TourPlanner.DAL.Repositories;
+using TourPlanner.Domain.Exceptions;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.BL.Services
@@ -10,6 +11,9 @@ namespace TourPlanner.BL.Services
     public class MapService : IMapService
     {
         private readonly IMapRepository _mapRepository;
+        
+        private static readonly log4net.ILog Log = 
+            log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod()?.DeclaringType);
 
         public MapService(IMapRepository mapRepository)
         {
@@ -23,57 +27,62 @@ namespace TourPlanner.BL.Services
 
         public List<List<Location>> FindLocations(string from, string to)
         {
-            Debug.Print("Searching for locations for from='" + from + "' to to=" + to + " ...");
-
-            var result = new List<List<Location>>();
-            var locations = this._mapRepository.FindLocation(from, to);
-
-            locations.Collections?.ForEach(x =>
+            try
             {
-                var validLocations = x.Where(y =>
-                    !string.IsNullOrEmpty(y.AdminArea5) &&
-                    !string.IsNullOrEmpty(y.AdminArea3) &&
-                    !string.IsNullOrEmpty(y.AdminArea1)
-                );
-                
-                var validLocationList = validLocations.ToList();
-                
-                var uniqueNames = validLocationList
-                    .Select(y => y.AdminArea5 + ", " + y.AdminArea3 + ", " + y.AdminArea1)
-                    .Distinct()
-                    .ToList();
+                Log.Debug($"Searching for locations from '{from}' to '{to}' ...");
 
-                var uniqueLocations = uniqueNames.Select(name => 
-                    validLocationList.First(z =>
-                    {
-                        string locName = z.AdminArea5 + ", " + z.AdminArea3 + ", " + z.AdminArea1;
-                        return locName.Equals(name);
-                    })
-                ).ToList();
+                var result = new List<List<Location>>();
+                var locationResponse = this._mapRepository.FindLocation(from, to);
 
-                var locationsList = uniqueLocations.Select(l =>
-                    new Location
-                    {
-                        Coordinates = l.Coordinates,
-                        Name = l.AdminArea5,
-                        FullName = l.AdminArea5 + ", " + l.AdminArea3 + ", " + l.AdminArea1
-                    }
-                ).ToList();
+                locationResponse.Collections?.ForEach(locationsSet =>
+                {
+                    var locations = locationsSet.FindAll(location =>
+                        !string.IsNullOrEmpty(location.AdminArea5) &&
+                        !string.IsNullOrEmpty(location.AdminArea3) &&
+                        !string.IsNullOrEmpty(location.AdminArea1)
+                    );
 
-                result.Add(locationsList);
-            });
+                    var uniqueNames = locations
+                        .Select(location => location.AdminArea5 + ", " + location.AdminArea3 + ", " + location.AdminArea1)
+                        .Distinct()
+                        .ToList();
 
-            if (result.Count < 1)
-            {
-                result.Add(new List<Location>());
+                    var uniqueLocations = uniqueNames.Select(name => 
+                        locations.First(location =>
+                        {
+                            string locName = location.AdminArea5 + ", " + location.AdminArea3 + ", " + location.AdminArea1;
+                            return locName.Equals(name);
+                        })
+                    ).ToList();
+
+                    var locationsList = uniqueLocations.Select(location =>
+                        new Location
+                        {
+                            Coordinates = location.Coordinates,
+                            Name = location.AdminArea5,
+                            FullName = location.AdminArea5 + ", " + location.AdminArea3 + ", " + location.AdminArea1
+                        }
+                    ).ToList();
+
+                    result.Add(locationsList);
+                });
+
+                if (result.Count < 1)
+                {
+                    result.Add(new List<Location>());
+                }
+
+                if (result.Count < 2)
+                {
+                    result.Add(new List<Location>());
+                }
+
+                return result;
             }
-
-            if (result.Count < 2)
+            catch (DataAccessException ex)
             {
-                result.Add(new List<Location>());
+                throw new BusinessException("Failed to find locations", ex);
             }
-
-            return result;
         }
     }
 }

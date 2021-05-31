@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using Microsoft.Extensions.Configuration;
+using TourPlanner.Domain.Exceptions;
 
 namespace TourPlanner.DAL.Repositories
 {
@@ -15,12 +16,20 @@ namespace TourPlanner.DAL.Repositories
 
         public byte[] Get(string imagePath)
         {
-            if (File.Exists(imagePath))
+            try
             {
+                if (!File.Exists(imagePath))
+                {
+                    return null;
+                }
+                
                 return File.ReadAllBytes(imagePath);
             }
-
-            return null;
+            catch (Exception ex) when (ex is ArgumentException or ArgumentNullException or PathTooLongException or
+                DirectoryNotFoundException or IOException or UnauthorizedAccessException)
+            {
+                throw new DataAccessException($"Failed to read file from path '{imagePath}'", ex);
+            }
         }
 
         public string Save(byte[] image)
@@ -32,20 +41,36 @@ namespace TourPlanner.DAL.Repositories
                 imagePath = this._imageDirectory + "\\" + Guid.NewGuid() + ".png";
             } 
             while (File.Exists(imagePath));
-            
-            File.WriteAllBytes(imagePath, image);
-            return imagePath;
+
+            try
+            {
+                File.WriteAllBytes(imagePath, image);
+                return imagePath;
+            }
+            catch (Exception ex) when (ex is ArgumentException or ArgumentNullException or PathTooLongException or 
+                DirectoryNotFoundException or IOException or UnauthorizedAccessException)
+            {
+                throw new DataAccessException($"Failed to save image to path '{imagePath}'", ex);
+            }
         }
 
         public bool Delete(string imagePath)
         {
-            if (File.Exists(imagePath))
+            try
             {
+                if (!File.Exists(imagePath))
+                {
+                    return false;
+                }
+                
                 File.Delete(imagePath);
                 return true;
             }
-
-            return false;
+            catch (Exception ex) when (ex is ArgumentException or ArgumentNullException or PathTooLongException or 
+                DirectoryNotFoundException or IOException or UnauthorizedAccessException or NotSupportedException)
+            {
+                throw new DataAccessException($"Failed to delete image from path '{imagePath}'", ex);
+            }
         }
     }
 }
