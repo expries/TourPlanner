@@ -1,4 +1,5 @@
 ﻿using System;
+using Newtonsoft.Json;
 
 namespace TourPlanner.Domain.Models
 {
@@ -37,6 +38,7 @@ namespace TourPlanner.Domain.Models
         [Column(Name="weather")]
         public WeatherCondition Weather { get; set; }
 
+        [JsonIgnore]
         [ManyToOne(ForeignKey="fk_tourId", Table="tour", PrimaryKey="tourID")]
         public Lazy<Tour> Tour { get; set; }
 

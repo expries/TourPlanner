@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace TourPlanner.Domain.Models
 {
@@ -33,6 +34,7 @@ namespace TourPlanner.Domain.Models
         [OneToMany(ForeignKey = "fk_tourID", Table = "tour_log")]
         public Lazy<List<TourLog>> TourLogs { get; set; }
 
+        [JsonIgnore]
         public byte[] Image
         {
             get

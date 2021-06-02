@@ -13,14 +13,15 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TourPlanner.WPF.Views
+namespace TourPlanner.WPF.Controls
 {
     /// <summary>
-    /// Interaction logic for TourList.xaml
+    /// Interaktionslogik für TourLogList.xaml
     /// </summary>
-    public partial class NewTourLogView : UserControl
+    public partial class TourLogList : UserControl
     {
-        public NewTourLogView()
+
+        public TourLogList()
         {
             InitializeComponent();
         }

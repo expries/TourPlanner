@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="TourPlanner.WPF.Views.NavbarView"
+﻿<UserControl x:Class="TourPlanner.WPF.Controls.Navbar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -45,7 +45,7 @@
 
             <Image 
                 Width="30" 
-                Source="/Resources/new-tour_icon.png" />
+                Source="/Resources/new-tour_icon.png"  />
         </Button>
     </Grid>
 

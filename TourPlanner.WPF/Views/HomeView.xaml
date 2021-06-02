@@ -3,18 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:view="clr-namespace:TourPlanner.WPF.Views"
-             xmlns:converters="clr-namespace:TourPlanner.WPF.Converters"
-             xmlns:models="clr-namespace:TourPlanner.Domain.Models;assembly=TourPlanner.Domain"
+             xmlns:controls="clr-namespace:TourPlanner.WPF.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-
-    <UserControl.Resources>
-        <converters:DateConverter x:Key="DateConverter"></converters:DateConverter>
-    </UserControl.Resources>
-
-
-    <Grid x:Name="Root">
+	
+    <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="320" />
             <ColumnDefinition Width="*" />
@@ -33,11 +26,30 @@
                 Grid.Row="0" 
                 Margin="20 60 20 20" 
                 Background="Transparent">
-                
+
                 <TextBlock
                     FontSize="20"
                     FontWeight="Medium"
                     Text="Touren" />
+
+                <Button
+                    HorizontalAlignment="Right"
+                    Margin="0 0 5 70"
+                    Style="{DynamicResource ModernButton}"
+                    controls:ContextMenuBehaviour.IsLeftClickEnabled="True">
+
+                    <Image
+                        Source="/Resources/3_dots_horizontal.png"
+                        Width="26" />
+
+                    <Button.ContextMenu>
+                        <ContextMenu
+                            Style="{DynamicResource TourListMenu}"
+                            DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.DataContext}"> 
+                        </ContextMenu>
+                    </Button.ContextMenu>
+
+                </Button>
 
                 <TextBox 
                     x:Name="TourSearchBox"
@@ -83,82 +95,79 @@
             </Grid>
 
             <Grid Grid.Row="1" HorizontalAlignment="Center">
-                <view:SidebarView />
+                <controls:TourList />
             </Grid>
         </Grid>
 
-        <Grid Grid.Column="1"
+		<Grid Grid.Column="1"
               Margin="25 60 25 20">
-            
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="auto" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
 
-            <TextBlock 
-                Grid.Row="0" 
+			<Grid.RowDefinitions>
+				<RowDefinition Height="auto" />
+				<RowDefinition Height="auto" />
+				<RowDefinition Height="*" />
+			</Grid.RowDefinitions>
+
+			<TextBlock
+                Grid.Row="0"
                 FontSize="24"
                 FontWeight="Medium"
                 VerticalAlignment="Center"
                 Margin="10 0 10 10"
                 Text="{Binding CurrentTour.Name}" />
 
-            <Button 
-                Grid.Row="0" 
+			<Button
                 HorizontalAlignment="Right"
                 Margin="0 0 5 0"
-                BorderThickness="0"
-                Background="Transparent"
                 Style="{DynamicResource ModernButton}"
-                view:ContextMenuBehaviour.IsLeftClickEnabled="True">
+                controls:ContextMenuBehaviour.IsLeftClickEnabled="True">
 
-                <Image 
-                    Source="/Resources/3_dots_horizontal.png" 
-                    Width="30"></Image>
+				<Image
+                    Source="/Resources/3_dots_horizontal.png"
+                    Width="26" />
 
-                <Button.ContextMenu>
-                    <ContextMenu 
-                        Style="{DynamicResource TourMenu}" 
+				<Button.ContextMenu>
+					<ContextMenu
+                        Style="{DynamicResource TourMenu}"
                         DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.DataContext}">
-                    </ContextMenu>
-                </Button.ContextMenu>
-               
-            </Button>
+					</ContextMenu>
+				</Button.ContextMenu>
 
-            <Grid 
+			</Button>
+
+			<Grid
                 Grid.Row="1"
                 Margin="0 20 0 0">
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition MaxWidth="490" MinWidth="400" Width="*"/>
-                </Grid.ColumnDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*" />
+					<ColumnDefinition MaxWidth="490" MinWidth="400" Width="*"/>
+				</Grid.ColumnDefinitions>
 
-                <Border 
+				<Border
                     Grid.Column="0"
                     CornerRadius="10"
                     BorderBrush="{StaticResource BorderColor}"
-                    BorderThickness="1" 
+                    BorderThickness="1"
                     Margin="0 0 15 0">
 
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                            <RowDefinition Height="auto" />
-                        </Grid.RowDefinitions>
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+							<RowDefinition Height="auto" />
+						</Grid.RowDefinitions>
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="0"
                             VerticalAlignment="Center"
                             FontSize="18"
@@ -166,93 +175,93 @@
                             Margin="25, 20, 20, 0"
                             Text="Tourinfo" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="1"
                             FontSize="15"
                             FontWeight="Medium"
                             Margin="25, 25, 20, 0"
                             Text="Von" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="2"
                             FontSize="15"
                             FontWeight="Light"
                             Margin="25, 5, 20, 0"
                             Text="{Binding CurrentTour.From}" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="3"
                             FontSize="15"
                             FontWeight="Medium"
                             Margin="25, 25, 20, 0"
                             Text="Bis" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="4"
                             FontSize="15"
                             FontWeight="Light"
                             Margin="25, 5, 20, 0"
                             Text="{Binding CurrentTour.To}" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="5"
                             FontSize="15"
                             FontWeight="Medium"
                             Margin="25, 17, 20, 0"
                             Text="Typ" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="6"
                             FontSize="15"
                             FontWeight="Light"
                             Margin="25, 5, 20, 0"
                             Text="{Binding CurrentTour.Type}" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="7"
                             FontSize="15"
                             FontWeight="Medium"
                             Margin="25, 17, 20, 0"
                             Text="Distanz" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="8"
                             FontSize="15"
                             FontWeight="Light"
                             Margin="25, 5, 20, 0"
                             Text="{Binding CurrentTour.Distance, StringFormat='\{0} km'}" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="9"
                             FontSize="15"
                             FontWeight="Medium"
                             Margin="25, 17, 20, 0"
                             Text="Beschreibung" />
 
-                        <TextBlock
+						<TextBlock
                             Grid.Row="10"
                             FontSize="15"
                             FontWeight="Light"
                             Margin="25, 5, 20, 20"
                             Text="{Binding CurrentTour.Description}" />
 
-                    </Grid>
-                </Border>
+					</Grid>
+				</Border>
 
-                <Border 
+				<Border
                     Grid.Column="1"
                     CornerRadius="10"
                     BorderBrush="{StaticResource BorderColor}"
                     BorderThickness="1">
 
-                    <Image 
+					<Image
                         Stretch="Uniform"
                         HorizontalAlignment="Center"
                         MaxHeight="360"
                         Source="{Binding Image}" />
 
-                </Border>
-            </Grid>
+				</Border>
+			</Grid>
 
             <Border 
                 Grid.Row="2"
@@ -291,288 +300,7 @@
                     </Grid>
 
                     <Grid Grid.Row="1">
-
-                        <ListView 
-                            Style="{DynamicResource ModernListView}" 
-                            Name="TourLogList"
-                            Grid.Row="1" 
-                            Margin="0 0 0 0"
-                            Padding="0 0 0 10"
-                            BorderThickness="0"
-                            Background="{DynamicResource GrayBlueBackground}"
-                            ItemsSource="{Binding CurrentTour.TourLogs.Value}">
-
-
-                            <ListView.ItemTemplate>
-                                <DataTemplate DataType="models:TourLog">
-
-                                    <Border
-                                        Background="white" 
-                                        Padding="10 15 10 15" 
-                                        Margin="15 10 15 0"
-                                        CornerRadius="5"
-                                        x:Name="RootB">
-
-                                        <Grid x:Name="TourLogGrid">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="auto" />
-                                                <ColumnDefinition Width="auto" />
-                                            </Grid.ColumnDefinitions>
-
-                                            <Grid Grid.Column="0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="auto" />
-                                                    <ColumnDefinition Width="auto" />
-                                                    <ColumnDefinition Width="auto" />
-                                                    <ColumnDefinition Width="auto" />
-                                                    <ColumnDefinition Width="auto" />
-                                                    <ColumnDefinition Width="auto" />
-                                                    <ColumnDefinition Width="auto" />
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition />
-                                                    <RowDefinition />
-                                                    <RowDefinition />
-                                                    <RowDefinition />
-                                                </Grid.RowDefinitions>
-
-                                                <TextBlock  
-                                                    Grid.Row="0"
-                                                    Grid.Column="0"
-                                                    Text="Datum" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Medium"
-                                                    Margin="20 0 0 5" />
-
-                                                <TextBlock  
-                                                    Grid.Row="1"
-                                                    Grid.Column="0"
-                                                    Text="{Binding Date, Converter={StaticResource DateConverter}}" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Light"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="0"
-                                                    Grid.Column="1"
-                                                    Text="Dauer" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Medium"
-                                                    Margin="20 0 0 5" />
-
-                                                <TextBlock  
-                                                    Grid.Row="1"
-                                                    Grid.Column="1"
-                                                    Text="{Binding Duration, StringFormat='\{0} min'}" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Light"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="0"
-                                                    Grid.Column="2"
-                                                    Text="Bewertung" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Medium"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="1"
-                                                    Grid.Column="2"
-                                                    Text="{Binding Rating, StringFormat='\{0}/5'}" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Light"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="0"
-                                                    Grid.Column="3"
-                                                    Text="Temperatur" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Medium"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="1"
-                                                    Grid.Column="3"
-                                                    Text="{Binding Temperature}" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Light"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="0"
-                                                    Grid.Column="4"
-                                                    Text="Geschwindigkeit" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Medium"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="1"
-                                                    Grid.Column="4"
-                                                    Text="{Binding AverageSpeed}" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Light"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="2"
-                                                    Grid.Column="0"
-                                                    Text="Gefahren-Niveau" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Medium"
-                                                    Margin="20 15 0 5" />
-
-                                                <TextBlock  
-                                                    Grid.Row="3"
-                                                    Grid.Column="0"
-                                                    Text="{Binding DangerLevel}" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Light"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="2"
-                                                    Grid.Column="1"
-                                                    Text="Schwierigkeit" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Medium"
-                                                    Margin="20 15 0 5" />
-
-                                                <TextBlock  
-                                                    Grid.Row="3"
-                                                    Grid.Column="1"
-                                                    Text="{Binding Difficulty}" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Light"
-                                                    Margin="20 0 0 0" />
-
-                                                <TextBlock  
-                                                    Grid.Row="2"
-                                                    Grid.Column="2"
-                                                    Text="Wetter" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Medium"
-                                                    Margin="20 15 0 5" />
-
-                                                <TextBlock  
-                                                    Grid.Row="3"
-                                                    Grid.Column="2"
-                                                    Text="{Binding Weather}" 
-                                                    VerticalAlignment="Center"
-                                                    FontSize="14"
-                                                    FontWeight="Light"
-                                                    Margin="20 0 0 5" />
-
-                                            </Grid>
-
-                                            <Grid Grid.Column="1" Margin="30 0 10 0">
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition />
-                                                    <RowDefinition />
-                                                </Grid.RowDefinitions>
-
-                                                <Button 
-                                                    Grid.Row="0" 
-                                                    Style="{DynamicResource CommandButton}"
-                                                    Padding="10 0 10 0"
-                                                    Content="Bearbeiten"
-                                                    Margin="0 0 0 2.5" 
-                                                    Command="{Binding ElementName=Root, Path=DataContext.EditTourLogCommand}"
-                                                    CommandParameter="{Binding}" />
-
-                                                <Button 
-                                                    Grid.Row="1" 
-                                                    Style="{DynamicResource CommandButton}"
-                                                    Padding="10 0 10 0"
-                                                    Margin="0 2.5 0 0"
-                                                    Content="Löschen"
-                                                    Command="{Binding ElementName=Root, Path=DataContext.DeleteTourLogCommand}"
-                                                    CommandParameter="{Binding}" />
-                                            </Grid>
-
-                                            <!--
-
-                                            <Button 
-                                                Style="{DynamicResource ModernButton}"
-                                                Grid.Column="1" 
-                                                Margin="15 0 0 0"
-                                                VerticalAlignment="Top"
-                                                 view:ContextMenuBehaviour.IsLeftClickEnabled="True">
-
-                                                <Image
-                                                    Margin="0 0 0 0"
-                                                    VerticalAlignment="Center"
-                                                    Source="/Resources/3_dots.png" 
-                                                    Width="40" />
-
-                                                <Button.ContextMenu>
-                                                    <ContextMenu 
-                                                        Name="Fun"
-                                                        DataContext="{Binding RelativeSource={RelativeSource Self}, Path=PlacementTarget.DataContext}">
-
-                                                        <ContextMenu.Template>
-                                                            <ControlTemplate>
-                                                                <Border DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ContextMenu}}}" 
-                                                                    CornerRadius="7" 
-                                                                    Background="White"
-                                                                        x:Name="AFF">
-
-                                                                    <Grid>
-                                                                        <Grid.RowDefinitions>
-                                                                            <RowDefinition/>
-                                                                            <RowDefinition/>
-                                                                        </Grid.RowDefinitions>
-
-                                                                        <Button 
-                                                                            Style="{DynamicResource HoverButton}" 
-                                                                            Grid.Row="0"
-                                                                            Content="Bearbeiten"
-                                                                            Padding="10"
-                                                                            FontSize="15"
-                                                                            Command="{Binding ElementName=AFF, Path=DataContext.EditTourLogCommand}"
-                                                                            CommandParameter="{Binding}" />
-
-                                                                        <Button 
-                                                                            Style="{DynamicResource HoverButton}"  
-                                                                            Grid.Row="1"
-                                                                            Content="Löschen"
-                                                                            Padding="10"
-                                                                            FontSize="15" 
-                                                                            Command="{Binding DeleteTourLogCommand}"
-                                                                            CommandParameter="{Binding}" />
-                                                                    </Grid>
-                                                                </Border>
-
-                                                            </ControlTemplate>
-                                                        </ContextMenu.Template>
-                                                    </ContextMenu>
-                                                </Button.ContextMenu>
-
-                                            </Button>
-                                            -->
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ListView.ItemTemplate>
-
-                        </ListView>
+						<controls:TourLogList />
                     </Grid>
                 </Grid>
             </Border>

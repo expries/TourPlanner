@@ -11,7 +11,8 @@ namespace TourPlanner.DAL.Repositories
 
         public RouteImageRepository(IConfiguration configuration)
         {
-            this._imageDirectory = configuration.GetSection("Paths")["ImageDirectory"];
+            var path = configuration.GetSection("Paths");
+            this._imageDirectory = path.GetValue<string>("ImageDirectory");
         }
 
         public byte[] Get(string imagePath)

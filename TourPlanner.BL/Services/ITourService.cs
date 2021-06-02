@@ -17,6 +17,10 @@ namespace TourPlanner.BL.Services
         public Task DeleteTourAsync(Tour tour);
 
         public Task DeleteTourLogAsync(TourLog tourLog);
+
+        public Task<List<Tour>> ImportToursAsync();
+
+        public Task ExportToursAsync();
         
 
         public List<Tour> GetTours();
@@ -30,5 +34,9 @@ namespace TourPlanner.BL.Services
         public void DeleteTour(Tour tour);
 
         public void DeleteTourLog(TourLog tourLog);
+
+        public List<Tour> ImportTours();
+
+        public void ExportTours();
     }
 }

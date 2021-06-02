@@ -1,9 +1,8 @@
-﻿using System.Diagnostics;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 
-namespace TourPlanner.WPF.Views
+namespace TourPlanner.WPF.Controls
 {
 
     // Taken and adapted from

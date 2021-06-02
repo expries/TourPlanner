@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using TourPlanner.DAL.Repositories;
 using TourPlanner.Domain.Exceptions;
 using TourPlanner.Domain.Models;
@@ -61,6 +63,16 @@ namespace TourPlanner.BL.Services
             return Task.Run(() => DeleteTourLog(tourLog));
         }
 
+        public Task<List<Tour>> ImportToursAsync()
+        {
+            return Task.Run(ImportTours);
+        }
+
+        public Task ExportToursAsync()
+        {
+            return Task.Run(ExportTours);
+        }
+
         public List<Tour> GetTours()
         {
             try
@@ -112,7 +124,8 @@ namespace TourPlanner.BL.Services
                         tourLog.DangerLevel.ToString().Contains(query),
                     });
                     
-                    return tourMatches.Any() || logMatchLists.Any(logMatches => logMatches.Any());
+                    return tourMatches.Any(x => x) || 
+                           logMatchLists.Any(logMatches => logMatches.Any(x => x));
                 });
                 
                 Log.Debug($"Search returned {tours.Count} tours");
@@ -144,6 +157,9 @@ namespace TourPlanner.BL.Services
 
                 if (routeResponse.Info.Statuscode != 0)
                 {
+                    Log.Error($"Could not find route for given locations (From: {tour.From}, To: {tour.To}):" 
+                             + string.Join("; ", routeResponse.Info.Messages));
+                    
                     throw new BusinessException("Could not find route for the given locations");
                 }
 
@@ -214,6 +230,62 @@ namespace TourPlanner.BL.Services
             {
                 Log.Error($"Failed to search for tour log: {ex.Message}");
                 throw new BusinessException("Failed to delete tour log", ex);
+            }
+        }
+
+        public List<Tour> ImportTours()
+        {
+            try
+            {
+                var openFileDialog = new OpenFileDialog();
+                openFileDialog.Title = "Wähle eine Datei für den Tour-Import aus ...";
+                openFileDialog.Filter = "JSON|*.json";
+                openFileDialog.ShowDialog();
+
+                string filePath = openFileDialog.FileName;
+
+                if (!File.Exists(filePath))
+                {
+                    throw new BusinessException("Datei für den Tour-Import konnte nicht gefunden werden.");
+                }
+
+                string fileContent = File.ReadAllText(filePath);
+                var importedTours = JsonConvert.DeserializeObject<List<Tour>>(fileContent);
+
+                if (importedTours is null)
+                {
+                    throw new BusinessException("Die Importdatei hat ein ungültiges Format.");
+                }
+            
+                importedTours.ForEach(tour => SaveTour(tour));
+                return this._tourRepository.GetAll();   
+            }
+            catch (DataAccessException ex)
+            {
+                Log.Error($"Failed to import tours: {ex.Message}");
+                throw new BusinessException("Fehler beim Tour-Import.", ex);
+            }
+        }
+
+        public void ExportTours()
+        {
+            try
+            {
+                var saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Title = "Wähle aus, wohin der Tour-Export gespeichert werden soll ...";
+                saveFileDialog.Filter = "JSON|*.json";
+                saveFileDialog.ShowDialog();
+
+                var tours = this._tourRepository.GetAll();
+                string toursJson = JsonConvert.SerializeObject(tours);
+                string fileName = saveFileDialog.FileName;
+
+                File.WriteAllText(fileName, toursJson);
+            }
+            catch (DataAccessException ex)
+            {
+                Log.Error($"Failed to export tours: {ex.Message}");
+                throw new BusinessException("Fehler beim Tour-Export.", ex);
             }
         }
     }

@@ -56,7 +56,7 @@ namespace TourPlanner.WPF
             services.AddSingleton<IMapRepository, MapRepository>();
             services.AddSingleton<ITourService, TourService>();
             services.AddSingleton<IMapService, MapService>();
-            services.AddSingleton<ITourReportService, TourReportService>();
+            services.AddSingleton<IReportService, ReportService>();
         }
         
         private static IConfigurationRoot GetConfiguration()

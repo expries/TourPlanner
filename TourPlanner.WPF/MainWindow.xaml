@@ -6,11 +6,14 @@
         xmlns:viewModels="clr-namespace:TourPlanner.WPF.ViewModels"
         xmlns:views="clr-namespace:TourPlanner.WPF.Views"
         xmlns:converters="clr-namespace:TourPlanner.WPF.Converters"
+        xmlns:controls="clr-namespace:TourPlanner.WPF.Controls"
         mc:Ignorable="d"
         Title="Tour Planner" 
-        Height="720" Width="1000" 
-        MinHeight="720" MinWidth="1200" 
-        WindowStyle="None">
+        Height="720" Width="1200" 
+        MinHeight="765" MinWidth="1200" 
+        WindowStyle="None"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="False">
 
     <WindowChrome.WindowChrome>
         <WindowChrome 
@@ -24,8 +27,7 @@
 
     <Window.Style>
         <Style TargetType="{x:Type Window}">
-            <Setter Property="FontFamily"
-            Value="Roboto" />
+            <Setter Property="FontFamily" Value="Roboto" />
         </Style>
     </Window.Style>
 
@@ -36,7 +38,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <views:NavbarView Grid.Column="0" />
+        <controls:Navbar Grid.Column="0" />
 
         <ContentControl 
             Grid.Column="1" 

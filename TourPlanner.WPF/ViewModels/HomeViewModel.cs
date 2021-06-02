@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -7,7 +7,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Microsoft.Win32;
 using TourPlanner.BL.Services;
 using TourPlanner.WPF.State;
 using TourPlanner.Domain.Models;
@@ -21,19 +20,17 @@ namespace TourPlanner.WPF.ViewModels
         
         private readonly ITourService _tourService;
 
-        private readonly ITourReportService _tourReportService;
+        private readonly IReportService _reportService;
 
         // backing fields
-        
-        private List<Tour> _tourList = new List<Tour>();
 
         private string _searchText = string.Empty;
 
-        private bool TourIsSelected => this._currentTour != null;
-        
-        private Image _image = new Image();
-
         private Tour _currentTour;
+
+        private Image _image = new Image();
+        
+        private bool TourIsSelected => this._currentTour != null;
 
         // public properties
         
@@ -48,16 +45,8 @@ namespace TourPlanner.WPF.ViewModels
                 OnPropertyChanged();
             }
         }
-
-        public List<Tour> TourList
-        {
-            get => this._tourList;
-            set
-            {
-                this._tourList = value;
-                OnPropertyChanged();
-            }
-        }
+        
+        public ObservableCollection<Tour> TourList { get; set; }
 
         public string SearchText
         {
@@ -95,11 +84,17 @@ namespace TourPlanner.WPF.ViewModels
         public ICommand UpdateCurrentTourCommand { get; }
         
         public ICommand DeleteCurrentTourCommand { get; }
+        
+        public ICommand CreateSummaryReportCommand { get; }
+        
+        public ICommand ExportToursCommand { get; }
+        
+        public ICommand ImportToursCommand { get; }
 
-        public HomeViewModel(ITourService tourService, ITourReportService tourReportService)
+        public HomeViewModel(ITourService tourService, IReportService reportService)
         {
             this._tourService = tourService;
-            this._tourReportService = tourReportService;
+            this._reportService = reportService;
 
             this.SelectTourCommand = new RelayCommand(SelectTour);
             this.DeleteCurrentTourCommand = new RelayCommand(DeleteTour, _ => this.TourIsSelected);
@@ -109,6 +104,10 @@ namespace TourPlanner.WPF.ViewModels
             this.EditTourLogCommand = new RelayCommand(EditTourLog, _ => this.TourIsSelected);
             this.CreateTourLogCommand = new RelayCommand(CreateTourLog, _ => this.TourIsSelected);
             this.DeleteTourLogCommand = new RelayCommand(DeleteTourLog, _ => this.TourIsSelected);
+
+            this.CreateSummaryReportCommand = new RelayCommand(CreateSummaryReport);
+            this.ExportToursCommand = new RelayCommand(ExportTours);
+            this.ImportToursCommand = new RelayCommand(ImportTours);
         }
 
         public override void OnNavigation(object context)
@@ -121,7 +120,9 @@ namespace TourPlanner.WPF.ViewModels
         private void SearchTour(string parameter)
         {
             Log.Debug("Search for tour '" + this.SearchText + "' was triggered.");
-            this.TourList = this._tourService.FindTours(parameter);
+            var foundTours = this._tourService.FindTours(parameter);
+            this.TourList = new ObservableCollection<Tour>(foundTours);
+            OnPropertyChanged(nameof(this.TourList));
         }
 
         private void SelectTour(object parameter)
@@ -154,21 +155,23 @@ namespace TourPlanner.WPF.ViewModels
         private async void CreateReport(object parameter)
         {
             Log.Debug("Create report was triggered.");
-            await this._tourReportService.CreateTourReportAsync(this.CurrentTour);
+            await this._reportService.CreateTourReportAsync(this.CurrentTour);
         }
 
         private async void DeleteTourLog(object parameter)
         {
-            Log.Debug("Delete tour was triggered.");
+            Log.Debug("Delete tour log was triggered.");
 
             if (parameter is not TourLog tourLog)
             {
                 return;
             }
             
-            this.CurrentTour.TourLogs.Value.RemoveAll(x => x.TourLogId == tourLog.TourLogId);
-            OnPropertyChanged(nameof(CurrentTour));
             await this._tourService.DeleteTourLogAsync(tourLog);
+            this.CurrentTour.TourLogs.Value.RemoveAll(x => x.TourLogId == tourLog.TourLogId);
+            var tour = this.CurrentTour;
+            this.CurrentTour = null;
+            this.CurrentTour = tour;
         }
 
         private void EditTourLog(object parameter)
@@ -188,15 +191,34 @@ namespace TourPlanner.WPF.ViewModels
 
         private void CreateTourLog(object parameter)
         {
-            Debug.Print("Create tour log was triggered.");
+            Log.Debug("Create tour log was triggered.");
             this.Context = this.CurrentTour;
             this.Navigator.UpdateCurrentViewModelCommand.Execute(ViewType.NewTourLog);
             this.Context = null;
         }
+        
+        private void CreateSummaryReport(object parameter)
+        {
+            this._reportService.CreateSummaryReport();
+        }
+
+        private void ExportTours(object parameter)
+        {
+            this._tourService.ExportTours();
+        }
+
+        private void ImportTours(object parameter)
+        {
+            var tours = this._tourService.ImportTours();
+            this.TourList = new ObservableCollection<Tour>(tours);
+            OnPropertyChanged(nameof(this.TourList));
+        }
 
         private async void LoadTours()
         {
-            this.TourList = await this._tourService.GetToursAsync();
+            var foundTours = await this._tourService.GetToursAsync();
+            this.TourList = new ObservableCollection<Tour>(foundTours);
+            OnPropertyChanged(nameof(this.TourList));
         }
 
         private void SetImage(byte[] imageData)

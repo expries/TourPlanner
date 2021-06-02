@@ -106,7 +106,7 @@ namespace TourPlanner.WPF.ViewModels
             
             if (errorFree)
             {
-                _errors.TryRemove(propertyName, out _);
+                this._errors.TryRemove(propertyName, out _);
                 OnErrorsChanged(propertyName);
             }
         }

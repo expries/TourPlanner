@@ -20,7 +20,7 @@ namespace TourPlanner.Domain.Documents
 
         public TourReport(Tour model)
         {
-            Model = model;
+            this.Model = model;
         }
 
         public DocumentMetadata GetMetadata()
