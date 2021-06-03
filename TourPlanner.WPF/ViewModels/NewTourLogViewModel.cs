@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Windows.Input;
 using TourPlanner.BL.Services;
+using TourPlanner.Domain.Exceptions;
 using TourPlanner.Domain.Models;
 using TourPlanner.WPF.State;
 using TourPlanner.WPF.ValidationRules;
@@ -16,6 +17,10 @@ namespace TourPlanner.WPF.ViewModels
         private TourLog _tourLog;
 
         private Tour _tour;
+
+        private bool _saveTourLogTriggered;
+        
+        private bool _saveTourLogInProgress;
 
         [Required(ErrorMessage="Dieses Feld ist verpflichtend.")]
         public DateTime Date
@@ -165,21 +170,42 @@ namespace TourPlanner.WPF.ViewModels
                 this._tour = tourLog.Tour.Value;
                 this._tourLog = tourLog;
             }
-
-            Validate();
         }
 
         public async void SaveTourLog(object parameter)
         {
-            this._tour.TourLogs.Value.RemoveAll(x => x.TourLogId == this._tourLog.TourLogId);
-            var log = await this._tourService.SaveTourLogAsync(this._tourLog);
-            this._tour.TourLogs.Value.Add(log);
-            Navigator.Instance.UpdateCurrentViewModelCommand.Execute(ViewType.Home);
+            try
+            {
+                this._saveTourLogTriggered = true;
+
+                if (!SaveTourLogCanExecute(null))
+                {
+                    return;
+                }
+
+                this._saveTourLogInProgress = true;
+                var log = await this._tourService.SaveTourLogAsync(this._tourLog);
+                this._saveTourLogInProgress = false;
+                
+                this._tour.TourLogs.Value.RemoveAll(x => x.TourLogId == this._tourLog.TourLogId);
+                this._tour.TourLogs.Value.Add(log);
+                Navigator.Instance.UpdateCurrentViewModelCommand.Execute(ViewType.Home);
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+                this._saveTourLogInProgress = false;
+            }
         }
 
         public bool SaveTourLogCanExecute(object parameter)
         {
-            return !this.HasErrors;
+            if (!this._saveTourLogTriggered)
+            {
+                return true;
+            }
+            
+            return Validate();
         }
     }
 }

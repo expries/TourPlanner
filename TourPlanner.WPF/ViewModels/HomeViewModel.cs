@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using TourPlanner.BL.Services;
+using TourPlanner.Domain.Exceptions;
 using TourPlanner.WPF.State;
 using TourPlanner.Domain.Models;
 
@@ -28,9 +30,11 @@ namespace TourPlanner.WPF.ViewModels
 
         private Tour _currentTour;
 
-        private Image _image = new Image();
+        private readonly Image _image = new Image();
         
         private bool TourIsSelected => this._currentTour != null;
+
+        private List<Tour> _tourList = new List<Tour>();
 
         // public properties
         
@@ -45,8 +49,16 @@ namespace TourPlanner.WPF.ViewModels
                 OnPropertyChanged();
             }
         }
-        
-        public ObservableCollection<Tour> TourList { get; set; }
+
+        public List<Tour> TourList
+        {
+            get => this._tourList;
+            set
+            {
+                this._tourList = value;
+                OnPropertyChanged();
+            }
+        }
 
         public string SearchText
         {
@@ -119,10 +131,15 @@ namespace TourPlanner.WPF.ViewModels
 
         private void SearchTour(string parameter)
         {
-            Log.Debug("Search for tour '" + this.SearchText + "' was triggered.");
-            var foundTours = this._tourService.FindTours(parameter);
-            this.TourList = new ObservableCollection<Tour>(foundTours);
-            OnPropertyChanged(nameof(this.TourList));
+            try
+            {
+                Log.Debug("Search for tour '" + this.SearchText + "' was triggered.");
+                this.TourList = this._tourService.FindTours(parameter);
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
 
         private void SelectTour(object parameter)
@@ -146,47 +163,75 @@ namespace TourPlanner.WPF.ViewModels
 
         private async void DeleteTour(object parameter)
         {
-            Log.Debug("Delete tour was triggered");
-            await this._tourService.DeleteTourAsync(this.CurrentTour);
-            this.CurrentTour = null;
-            LoadTours();
+            try
+            {
+                Log.Debug("Delete tour was triggered");
+                await this._tourService.DeleteTourAsync(this.CurrentTour);
+                this.CurrentTour = null;
+                LoadTours();
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
         
         private async void CreateReport(object parameter)
         {
-            Log.Debug("Create report was triggered.");
-            await this._reportService.CreateTourReportAsync(this.CurrentTour);
+            try
+            {
+                Log.Debug("Create report was triggered.");
+                await this._reportService.CreateTourReportAsync(this.CurrentTour);
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
 
         private async void DeleteTourLog(object parameter)
         {
-            Log.Debug("Delete tour log was triggered.");
-
-            if (parameter is not TourLog tourLog)
+            try
             {
-                return;
-            }
+                Log.Debug("Delete tour log was triggered.");
+
+                if (parameter is not TourLog tourLog)
+                {
+                    return;
+                }
             
-            await this._tourService.DeleteTourLogAsync(tourLog);
-            this.CurrentTour.TourLogs.Value.RemoveAll(x => x.TourLogId == tourLog.TourLogId);
-            var tour = this.CurrentTour;
-            this.CurrentTour = null;
-            this.CurrentTour = tour;
+                await this._tourService.DeleteTourLogAsync(tourLog);
+                this.CurrentTour.TourLogs.Value.RemoveAll(x => x.TourLogId == tourLog.TourLogId);
+                var tour = this.CurrentTour;
+                this.CurrentTour = null;
+                this.CurrentTour = tour;
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
 
         private void EditTourLog(object parameter)
         {
-            Log.Debug("Edit tour was triggered.");
-
-            if (parameter is not TourLog tourLog)
+            try
             {
-                return;
-            }
+                Log.Debug("Edit tour was triggered.");
 
-            tourLog.Tour = new Lazy<Tour>(this.CurrentTour);
-            this.Context = tourLog;
-            this.Navigator.UpdateCurrentViewModelCommand.Execute(ViewType.NewTourLog);
-            this.Context = null;
+                if (parameter is not TourLog tourLog)
+                {
+                    return;
+                }
+
+                tourLog.Tour = new Lazy<Tour>(this.CurrentTour);
+                this.Context = tourLog;
+                this.Navigator.UpdateCurrentViewModelCommand.Execute(ViewType.NewTourLog);
+                this.Context = null;   
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
 
         private void CreateTourLog(object parameter)
@@ -199,26 +244,50 @@ namespace TourPlanner.WPF.ViewModels
         
         private void CreateSummaryReport(object parameter)
         {
-            this._reportService.CreateSummaryReport();
+            try
+            {
+                this._reportService.CreateSummaryReport();
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
 
         private void ExportTours(object parameter)
         {
-            this._tourService.ExportTours();
+            try
+            {
+                this._tourService.ExportTours();
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
 
         private void ImportTours(object parameter)
         {
-            var tours = this._tourService.ImportTours();
-            this.TourList = new ObservableCollection<Tour>(tours);
-            OnPropertyChanged(nameof(this.TourList));
+            try
+            {
+                this.TourList = this._tourService.ImportTours();
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
 
         private async void LoadTours()
         {
-            var foundTours = await this._tourService.GetToursAsync();
-            this.TourList = new ObservableCollection<Tour>(foundTours);
-            OnPropertyChanged(nameof(this.TourList));
+            try
+            {
+                this.TourList = await this._tourService.GetToursAsync();
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+            }
         }
 
         private void SetImage(byte[] imageData)

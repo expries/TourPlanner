@@ -12,7 +12,7 @@ namespace TourPlanner.WPF.ViewModels
 {
     public class ValidatedViewModelBase : ViewModelBase, INotifyDataErrorInfo
     {
-        private readonly ConcurrentDictionary<string, List<string>> _errors
+        private ConcurrentDictionary<string, List<string>> _errors
             = new ConcurrentDictionary<string, List<string>>();
         
         private readonly object _validationLock = new object();
@@ -50,20 +50,26 @@ namespace TourPlanner.WPF.ViewModels
             return errors;
         }
 
-        protected Task ValidateAsync()
+        protected Task<bool> ValidateAsync()
         {
             lock (this._validationLock)
             {
-                return Task.Run(() => Validate());
+                return Task.Run(Validate);
             }
         }
 
-        protected Task ValidatePropertyAsync(string propertyName)
+        protected Task<bool> ValidatePropertyAsync(string propertyName)
         {
             lock (this._validationLock) 
             {
                 return Task.Run(() => ValidateProperty(propertyName));
             }
+        }
+
+        protected void ClearValidationErrors()
+        {
+            this._errors = new ConcurrentDictionary<string, List<string>>();
+            OnErrorsChanged();
         }
 
         protected bool ValidateProperty(string propertyName)

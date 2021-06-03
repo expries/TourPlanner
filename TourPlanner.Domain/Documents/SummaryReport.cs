@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using QuestPDF.Drawing;
 using QuestPDF.Infrastructure;
+using TourPlanner.Domain.Exceptions;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.Domain.Documents
@@ -21,7 +22,7 @@ namespace TourPlanner.Domain.Documents
 
         public void Compose(IContainer container)
         {
-            throw new System.NotImplementedException();
+            throw new BusinessException("Der Summary Report wurde noch nicht eingebaut!");
         }
     }
 }

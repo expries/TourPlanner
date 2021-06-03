@@ -34,18 +34,27 @@ namespace TourPlanner.Domain.Models
         [OneToMany(ForeignKey = "fk_tourID", Table = "tour_log")]
         public Lazy<List<TourLog>> TourLogs { get; set; }
 
-        [JsonIgnore]
+        private byte[] _images;
+        
         public byte[] Image
         {
             get
             {
-                if (!File.Exists(this.ImagePath))
+                if (this._images is not null)
                 {
-                    return Array.Empty<byte>();
+                    return this._images;
                 }
                 
-                return File.ReadAllBytes(this.ImagePath);
+                if (!File.Exists(this.ImagePath))
+                {
+                    return null;
+                }
+                
+                this._images = File.ReadAllBytes(this.ImagePath);
+                return this._images;
             }
+
+            set => this._images = value;
         }
         
         public Tour()
@@ -58,6 +67,7 @@ namespace TourPlanner.Domain.Models
             this.Description = string.Empty;
             this.ImagePath = string.Empty;
             this.TourLogs = new Lazy<List<TourLog>>();
+            this._images = null;
         }
 
         public bool Equals(Tour other)

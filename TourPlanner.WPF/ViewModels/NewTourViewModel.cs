@@ -1,11 +1,11 @@
-﻿using System.Diagnostics;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using TourPlanner.BL.Services;
 using TourPlanner.WPF.State;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using TourPlanner.Domain;
+using TourPlanner.Domain.Exceptions;
 using TourPlanner.Domain.Models;
 
 namespace TourPlanner.WPF.ViewModels
@@ -16,11 +16,13 @@ namespace TourPlanner.WPF.ViewModels
 
         private ITourService TourService { get; }
 
-        private Dictionary<string, Location> Locations { get; } = new Dictionary<string, Location>();
+        private bool _locationLoadingInProgress;
 
-        private bool _locationLoadingInProgress = false;
+        private bool _tourSaveInProgress;
         
-        private bool _tourSavingInProgress = false;
+        private bool _tourSaveTriggered;
+
+        private bool _loadRouteTriggered;
 
         // backing fields
 
@@ -162,62 +164,98 @@ namespace TourPlanner.WPF.ViewModels
                 tour = new Tour();
             }
             
-            this._fromQuery = tour.From;
+            this.FromQuery = tour.From;
             this.ToQuery = tour.To;
             this.FromSuggestions = new List<string> { tour.From };
             this.ToSuggestions = new List<string> { tour.To };
-            this.Locations[tour.From] = new Location { FullName = tour.From };
-            this.Locations[tour.To] = new Location { FullName = tour.To };
-            
             this._tour = tour;
-            Validate();
+            
+            ClearValidationErrors();
         }
 
         private async void LoadRoute(object parameter)
         {
-            Debug.Print("Load route was triggered,");
+            try
+            {
+                this._loadRouteTriggered = true;
 
-            this._locationLoadingInProgress = true;
-            var locations = await this.MapService.FindLocationsAsync(this.FromQuery, this.ToQuery);
-            this._locationLoadingInProgress = false;
-            
-            var locationsFrom = locations[0];
-            var locationsTo = locations[1];
+                if (!LoadRouteCanExecute(null))
+                {
+                    return;
+                }
 
-            this.FromSuggestions = locationsFrom.Select(x => x.FullName).ToList();
-            this.ToSuggestions = locationsTo.Select(x => x.FullName).ToList();
-            
-            this.Locations.Clear();
-            locationsFrom.ForEach(x => this.Locations[x.FullName] = x);
-            locationsTo.ForEach(x => this.Locations[x.FullName] = x);
+                this._locationLoadingInProgress = true;
+                var locations = await this.MapService.FindLocationsAsync(this.FromQuery, this.ToQuery);
+                this._locationLoadingInProgress = false;
+
+                var locationsFrom = locations[0];
+                var locationsTo = locations[1];
+
+                this.FromSuggestions = locationsFrom.Select(x => x.FullName).ToList();
+                this.ToSuggestions = locationsTo.Select(x => x.FullName).ToList();
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+                this._locationLoadingInProgress = false;
+            }
         }
 
         private bool LoadRouteCanExecute(object parameter)
         {
+            if (!this._loadRouteTriggered)
+            {
+                return true;
+            }
+
+            if (this._locationLoadingInProgress)
+            {
+                return false;
+            }
+            
             var dependentProperties = new List<string>
             {
                 nameof(this.FromQuery), 
                 nameof(this.ToQuery)
             };
             
-            return dependentProperties.All(ValidateProperty) && !this._locationLoadingInProgress;
+            bool valid = dependentProperties.All(ValidateProperty);
+            return valid && !this._locationLoadingInProgress;
         }
 
         private async void SaveTour(object parameter)
         {
-            Debug.Print("Save tour was triggered");
+            try
+            {
+                this._tourSaveTriggered = true;
+                
+                if (!SaveTourCanExecute(null))
+                {
+                    return;
+                }
+
+                this._tourSaveInProgress = true;
+                var newTour = await this.TourService.SaveTourAsync(this._tour);
+                this._tourSaveInProgress = false;
             
-            this._tourSavingInProgress = true;
-            var newTour = await this.TourService.SaveTourAsync(this._tour);
-            this._tourSavingInProgress = false;
-            
-            this.Context = newTour;
-            Navigator.Instance.UpdateCurrentViewModelCommand.Execute(ViewType.Home);
-            this.Context = null;
+                this.Context = newTour;
+                Navigator.Instance.UpdateCurrentViewModelCommand.Execute(ViewType.Home);
+                this.Context = null;
+            }
+            catch (BusinessException ex)
+            {
+                DisplayError(ex.Message);
+                this._tourSaveInProgress = false;
+            }
         }
 
         private bool SaveTourCanExecute(object parameter)
         {
+            if (!this._tourSaveTriggered)
+            {
+                return true;
+            }
+            
             var dependentProperties = new List<string>
             {
                 nameof(this.From), 
@@ -225,8 +263,9 @@ namespace TourPlanner.WPF.ViewModels
                 nameof(this.Type), 
                 nameof(this.TourName)
             };
-            
-            return dependentProperties.All(ValidateProperty) && !this._tourSavingInProgress;
+
+            bool valid = dependentProperties.All(ValidateProperty); 
+            return valid && !this._tourSaveInProgress;
         }
     }
 }

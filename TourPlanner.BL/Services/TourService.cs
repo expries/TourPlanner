@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -82,7 +83,7 @@ namespace TourPlanner.BL.Services
             catch (DataAccessException ex)
             {
                 Log.Error($"Failed to get tours: {ex.Message}");
-                throw new BusinessException("Failed to get tours", ex);
+                throw new BusinessException("Fehler beim Abrufen der Touren.", ex);
             }
         }
         
@@ -134,7 +135,7 @@ namespace TourPlanner.BL.Services
             catch (DataAccessException ex)
             {
                 Log.Error($"Failed to search for tour: {ex.Message}");
-                throw new BusinessException("Failed to search for tours", ex);
+                throw new BusinessException("Fehler bei der Tour-Suche.", ex);
             }
         }
 
@@ -160,7 +161,7 @@ namespace TourPlanner.BL.Services
                     Log.Error($"Could not find route for given locations (From: {tour.From}, To: {tour.To}):" 
                              + string.Join("; ", routeResponse.Info.Messages));
                     
-                    throw new BusinessException("Could not find route for the given locations");
+                    throw new BusinessException("Es konnte keine Route für diese Orte gefunden werden.");
                 }
 
                 byte[] imageData = this._mapRepository.GetImage(route.SessionId, route.BoundingBox, 400, 300);
@@ -179,7 +180,7 @@ namespace TourPlanner.BL.Services
             catch (DataAccessException ex)
             {
                 Log.Error($"Failed to save tour: {ex.Message}");
-                throw new BusinessException("Failed to save tour", ex);
+                throw new BusinessException("Fehler beim Speichern der Tour.", ex);
             }
         }
         
@@ -189,15 +190,15 @@ namespace TourPlanner.BL.Services
             {
                 if (tourLog.Tour.Value is null)
                 {
-                    throw new BusinessException("Tour log is not associated with tour");
+                    throw new BusinessException("Tourlog ist mit keiner Tour verbunden.");
                 }
                 
                 return this._tourLogRepository.Save(tourLog);
             }
             catch (DataAccessException ex)
             {
-                Log.Error($"Failed to search for tour log: {ex.Message}");
-                throw new BusinessException("Failed to save tour log", ex);
+                Log.Error($"Failed to save tour log: {ex.Message}");
+                throw new BusinessException("Fehler beim Speichern des Tourlogs.", ex);
             }
         }
         
@@ -216,7 +217,7 @@ namespace TourPlanner.BL.Services
             catch (DataAccessException ex)
             {
                 Log.Error($"Failed delete tour: {ex.Message}");
-                throw new BusinessException("Failed to delete tour", ex);
+                throw new BusinessException("Fehler beim Löschen der Tour.", ex);
             }
         }
 
@@ -229,7 +230,7 @@ namespace TourPlanner.BL.Services
             catch (DataAccessException ex)
             {
                 Log.Error($"Failed to search for tour log: {ex.Message}");
-                throw new BusinessException("Failed to delete tour log", ex);
+                throw new BusinessException("Fehler beim Löschen des Tourlogs.", ex);
             }
         }
 
@@ -250,14 +251,14 @@ namespace TourPlanner.BL.Services
                 }
 
                 string fileContent = File.ReadAllText(filePath);
-                var importedTours = JsonConvert.DeserializeObject<List<Tour>>(fileContent);
+                var toursToImport = JsonConvert.DeserializeObject<List<Tour>>(fileContent);
 
-                if (importedTours is null)
+                if (toursToImport is null)
                 {
                     throw new BusinessException("Die Importdatei hat ein ungültiges Format.");
                 }
-            
-                importedTours.ForEach(tour => SaveTour(tour));
+
+                toursToImport.ForEach(ImportTour);
                 return this._tourRepository.GetAll();   
             }
             catch (DataAccessException ex)
@@ -287,6 +288,25 @@ namespace TourPlanner.BL.Services
                 Log.Error($"Failed to export tours: {ex.Message}");
                 throw new BusinessException("Fehler beim Tour-Export.", ex);
             }
+        }
+
+        private void ImportTour(Tour tour)
+        {
+            byte[] image = this._imageRepository.Get(tour.ImagePath);
+
+            if (image != tour.Image)
+            {
+                this._imageRepository.Delete(tour.ImagePath);
+                tour.ImagePath = this._imageRepository.Save(tour.Image);
+            }
+            
+            tour = this._tourRepository.Save(tour);
+
+            tour.TourLogs.Value.ForEach(tourLog =>
+            {
+                tourLog.Tour = new Lazy<Tour>(() => tour);
+                this._tourLogRepository.Save(tourLog);
+            });
         }
     }
 }
