@@ -10,14 +10,14 @@ namespace TourPlanner.BL.Services
 {
     public class MapService : IMapService
     {
-        private readonly IMapRepository _mapRepository;
+        private readonly IRouteRepository _routeRepository;
         
         private static readonly log4net.ILog Log = 
             log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod()?.DeclaringType);
 
-        public MapService(IMapRepository mapRepository)
+        public MapService(IRouteRepository routeRepository)
         {
-            this._mapRepository = mapRepository;
+            this._routeRepository = routeRepository;
         }
         
         public Task<List<List<Location>>> FindLocationsAsync(string from, string to)
@@ -32,7 +32,7 @@ namespace TourPlanner.BL.Services
                 Log.Debug($"Searching for locations from '{from}' to '{to}' ...");
 
                 var result = new List<List<Location>>();
-                var locationResponse = this._mapRepository.FindLocation(from, to);
+                var locationResponse = this._routeRepository.FindLocation(from, to);
 
                 locationResponse.Collections?.ForEach(locationsSet =>
                 {

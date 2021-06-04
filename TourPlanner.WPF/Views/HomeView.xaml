@@ -242,6 +242,7 @@
                             Grid.Row="10"
                             FontSize="15"
                             FontWeight="Light"
+                            TextWrapping="Wrap"
                             Margin="25, 5, 20, 20"
                             Text="{Binding CurrentTour.Description}" />
 

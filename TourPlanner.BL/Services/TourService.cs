@@ -18,7 +18,7 @@ namespace TourPlanner.BL.Services
 
         private readonly ITourLogRepository _tourLogRepository;
 
-        private readonly IMapRepository _mapRepository;
+        private readonly IRouteRepository _routeRepository;
 
         private readonly IRouteImageRepository _imageRepository;
         
@@ -26,11 +26,11 @@ namespace TourPlanner.BL.Services
             log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod()?.DeclaringType);
 
         public TourService(ITourRepository tourRepository, ITourLogRepository tourLogRepository, 
-                           IMapRepository mapRepository, IRouteImageRepository routeImageRepository)
+                           IRouteRepository routeRepository, IRouteImageRepository routeImageRepository)
         {
             this._tourRepository = tourRepository;
             this._tourLogRepository = tourLogRepository;
-            this._mapRepository = mapRepository;
+            this._routeRepository = routeRepository;
             this._imageRepository = routeImageRepository;
         }
 
@@ -152,7 +152,7 @@ namespace TourPlanner.BL.Services
                 }
             
                 // query api
-                var routeResponse = this._mapRepository.GetRoute(tour.From, tour.To);
+                var routeResponse = this._routeRepository.GetRoute(tour.From, tour.To);
                 var route = routeResponse.Route;
                 tour.Distance = route.Distance;
 
@@ -164,7 +164,7 @@ namespace TourPlanner.BL.Services
                     throw new BusinessException("Es konnte keine Route für diese Orte gefunden werden.");
                 }
 
-                byte[] imageData = this._mapRepository.GetImage(route.SessionId, route.BoundingBox, 400, 300);
+                byte[] imageData = this._routeRepository.GetImage(route.SessionId, route.BoundingBox, 400, 300);
 
                 // save image
                 tour.ImagePath = this._imageRepository.Save(imageData);

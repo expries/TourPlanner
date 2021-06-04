@@ -181,7 +181,7 @@ namespace TourPlanner.WPF.ViewModels
             try
             {
                 Log.Debug("Create report was triggered.");
-                await this._reportService.CreateTourReportAsync(this.CurrentTour);
+                this._reportService.CreateTourReport(this.CurrentTour);
             }
             catch (BusinessException ex)
             {

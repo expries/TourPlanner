@@ -2,7 +2,7 @@
 
 namespace TourPlanner.DAL.Repositories
 {
-    public interface IMapRepository
+    public interface IRouteRepository
     {
         public LocationResponse FindLocation(string locationFrom, string locationTo);
         

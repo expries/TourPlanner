@@ -53,7 +53,7 @@ namespace TourPlanner.WPF
             services.AddSingleton<ITourRepository, TourRepository>();
             services.AddSingleton<ITourLogRepository, TourLogRepository>();
             services.AddSingleton<IRouteImageRepository, RouteImageRepository>();
-            services.AddSingleton<IMapRepository, MapRepository>();
+            services.AddSingleton<IRouteRepository, RouteRepository>();
             services.AddSingleton<ITourService, TourService>();
             services.AddSingleton<IMapService, MapService>();
             services.AddSingleton<IReportService, ReportService>();

@@ -4,13 +4,13 @@ using TourPlanner.DAL.Requests;
 
 namespace TourPlanner.DAL.Repositories
 {
-    public class MapRepository : IMapRepository
+    public class RouteRepository : IRouteRepository
     {
         private readonly string _baseUrl;
 
         private readonly string _apiKey;
         
-        public MapRepository(IConfiguration configuration)
+        public RouteRepository(IConfiguration configuration)
         {
             var api = configuration.GetSection("Api");
             this._apiKey = api.GetValue<string>("Key");

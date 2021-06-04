@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Win32;
@@ -34,24 +36,39 @@ namespace TourPlanner.BL.Services
 
         public void CreateTourReport(Tour tour)
         {
-            Log.Debug("Creating tour report: Opening save file dialog ...");
-                
-            var saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "Pdf|*.pdf";
-            saveFileDialog.Title = "Speicherort für den Tourreport auswählen ...";
-            saveFileDialog.ShowDialog();
-                
-            string filePath = saveFileDialog.FileName;
-                
-            if (string.IsNullOrEmpty(filePath))
+            try
             {
-                Log.Error("Received empty file path for tour report creation.");
-                throw new BusinessException("Can't save tour report to empty path.");
+                Log.Debug("Creating tour report ...");
+
+                if (tour is null)
+                {
+                    Log.Error("Can't create tour report for tour that does not exist.");
+                    throw new BusinessException("Fehler beim Erstellen des Tour-Reports: Es gibt die ausgewählte Tour nicht mehr.");
+                }
+
+                var saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "Pdf|*.pdf";
+                saveFileDialog.Title = "Speicherort für den Tourreport auswählen ...";
+                saveFileDialog.ShowDialog();
+
+                string filePath = saveFileDialog.FileName;
+
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    Log.Error("Received empty file path for tour report creation.");
+                    throw new BusinessException("Der Tour-Report konnte nicht gespeichert werden: Angegebener Pfad ist leer.");
+                }
+
+                var document = new TourReport(tour);
+                document.GeneratePdf(filePath);
+                Process.Start("explorer.exe", filePath);
             }
-                
-            var document = new TourReport(tour);
-            document.GeneratePdf(filePath);
-            Process.Start("explorer.exe", filePath);
+            catch (IOException ex)
+            {
+                Log.Error($"Failed create tour report: {ex.Message}");
+                throw new BusinessException("Fehler beim Speichern des Tour-Report: Kann nicht auf die Datei zugreifen.", ex);
+            }
+            
         }
 
         public void CreateSummaryReport()
@@ -59,14 +76,14 @@ namespace TourPlanner.BL.Services
             try
             {
                 Log.Debug("Creating summary report: Opening save file dialog ...");
-                
+
                 var saveFileDialog = new SaveFileDialog();
                 saveFileDialog.Filter = "Pdf|*.pdf";
                 saveFileDialog.Title = "Speicherort für den Tourreport auswählen ...";
                 saveFileDialog.ShowDialog();
-                
+
                 string filePath = saveFileDialog.FileName;
-                
+
                 if (string.IsNullOrEmpty(filePath))
                 {
                     Log.Error("Received empty file path for summary report creation.");
@@ -78,10 +95,16 @@ namespace TourPlanner.BL.Services
                 document.GeneratePdf(filePath);
                 Process.Start("explorer.exe", filePath);
             }
+            catch (IOException ex)
+            {
+                Log.Error($"Failed create tour summary report: {ex.Message}");
+                throw new BusinessException(
+                    "Fehler beim Speichern des Tour Summary-Report: Kann nicht auf die Datei zugreifen.", ex);
+            }
             catch (DataAccessException ex)
             {
                 Log.Error($"Failed to create tour report: {ex.Message}");
-                throw new BusinessException("Failed to create tour report", ex);
+                throw new BusinessException("Fehler beim Abrufen der Touren.", ex);
             }
         }
     }
