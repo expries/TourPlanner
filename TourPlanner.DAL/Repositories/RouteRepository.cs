@@ -26,7 +26,7 @@ namespace TourPlanner.DAL.Repositories
             return response;
         }
 
-        public DirectionResponse GetRoute(string locationFrom, string locationTo)
+        public DirectionResponse Get(string locationFrom, string locationTo)
         {
             string url = $"{this._baseUrl}/directions/v2/route?key={this._apiKey}";
             var request = new DirectionRequest();

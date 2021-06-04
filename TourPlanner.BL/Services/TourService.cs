@@ -114,15 +114,16 @@ namespace TourPlanner.BL.Services
                         
                     var logMatchLists = tour.TourLogs.Value.Select(tourLog => new List<bool>
                     {
-                        tourLog.Date.ToString().Contains(query),
-                        tourLog.Difficulty.ToString().Contains(query),
-                        tourLog.Distance.ToString().Contains(query),
-                        tourLog.Duration.ToString().Contains(query),
-                        tourLog.Rating.ToString().Contains(query),
-                        tourLog.Temperature.ToString().Contains(query),
-                        tourLog.Weather.ToString().Contains(query),
-                        tourLog.AverageSpeed.ToString().Contains(query),
-                        tourLog.DangerLevel.ToString().Contains(query),
+                        tourLog.Date.ToString().ToLower().Contains(query),
+                        tourLog.Difficulty.ToString().ToLower().Contains(query),
+                        tourLog.Description.ToLower().Contains(query),
+                        tourLog.Distance.ToString().ToLower().Contains(query),
+                        tourLog.Duration.ToString().ToLower().Contains(query),
+                        tourLog.Rating.ToString().ToLower().Contains(query),
+                        tourLog.Temperature.ToString().ToLower().Contains(query),
+                        tourLog.Weather.ToString().ToLower().Contains(query),
+                        tourLog.AverageSpeed.ToString().ToLower().Contains(query),
+                        tourLog.DangerLevel.ToString().ToLower().Contains(query),
                     });
                     
                     return tourMatches.Any(x => x) || 
@@ -152,7 +153,7 @@ namespace TourPlanner.BL.Services
                 }
             
                 // query api
-                var routeResponse = this._routeRepository.GetRoute(tour.From, tour.To);
+                var routeResponse = this._routeRepository.Get(tour.From, tour.To);
                 var route = routeResponse.Route;
                 tour.Distance = route.Distance;
 
