@@ -10,6 +10,7 @@ using TourPlanner.Domain.Models;
 
 namespace TourPlanner.Test
 {
+    [TestFixture]
     public class TourServiceTests
     {
         private Mock<ITourRepository> _tourRepositoryMock;
@@ -197,7 +198,7 @@ namespace TourPlanner.Test
         }
         
         [Test]
-        public void Test_SaveTour_WhenDescriptionIsEmpty_DescriptionIsSetToPlacholder()
+        public void Test_SaveTour_WhenDescriptionIsEmpty_DescriptionIsSetToPlaceholder()
         {
             // arrange
             SetupMocksForSaveTour();
@@ -209,7 +210,31 @@ namespace TourPlanner.Test
             // assert
             Assert.AreEqual("Keine Beschreibung", tour.Description);
         }
+
+        [Test]
+        public void Test_SaveTourLog_WhenLogDoesNotStoreReferenceToTour_BusinessExceptionIsThrown()
+        {
+            // arrange
+            var tourLog = new TourLog { Tour = new Lazy<Tour>(() => null) };
+            
+            // act + assert
+            Assert.Throws<BusinessException>(() => this._tourService.SaveTourLog(tourLog));
+        }
         
+        [Test]
+        public void Test_SaveTourLog_WhenLogIsComplete_LogIsSaved()
+        {
+            // arrange
+            var tourLog = new TourLog { Tour = new Lazy<Tour>(() => new Tour()) };
+            
+            // act
+            this._tourService.SaveTourLog(tourLog);
+            
+            // assert
+            this._tourLogRepositoryMock.Verify(repository => 
+                repository.Save(It.IsAny<TourLog>()), Times.Once());
+        }
+
         private void SetupMocksForSaveTour()
         {
             var directionResponse = new DirectionResponse
@@ -251,7 +276,7 @@ namespace TourPlanner.Test
 
             this._tourRepositoryMock
                 .Setup(repository => repository.Save(It.IsAny<Tour>()))
-                .Returns<Tour>(x => x);
+                .Returns<Tour>(tour => tour);
         }
     }
 }
