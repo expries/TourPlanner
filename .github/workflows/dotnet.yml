@@ -3,6 +3,7 @@ name: .NET
 on:
   push:
 <<<<<<< HEAD
+<<<<<<< HEAD
     branches: [ main, development ]
   pull_request:
     branches: [ main, development ]
@@ -11,31 +12,46 @@ on:
   pull_request:
     branches: [ main ]
 >>>>>>> 858e407 (Created Github Actions Workflow)
+=======
+    branches: [ main, development-workflow ]
+  pull_request:
+    branches: [ main, development-workflow ]
+>>>>>>> 88fe1a25b54488cf2518380691c34ea41986e760
 
 jobs:
   build:
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 88fe1a25b54488cf2518380691c34ea41986e760
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
     
+<<<<<<< HEAD
 =======
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 >>>>>>> 858e407 (Created Github Actions Workflow)
+=======
+>>>>>>> 88fe1a25b54488cf2518380691c34ea41986e760
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 88fe1a25b54488cf2518380691c34ea41986e760
         
     - name: Restore dependencies
       run: dotnet restore
       
+<<<<<<< HEAD
     - name: Build
       run: dotnet build --no-restore
       
@@ -45,5 +61,13 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
 >>>>>>> 858e407 (Created Github Actions Workflow)
+=======
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v1.0.0
+      
+    - name: Build
+      run: dotnet build --no-restore
+      
+>>>>>>> 88fe1a25b54488cf2518380691c34ea41986e760
     - name: Test
       run: dotnet test --no-build --verbosity normal
