@@ -8,8 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourPlanner.DAL", "TourPlan
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourPlanner.BL", "TourPlanner.BL\TourPlanner.BL.csproj", "{BD1E9AA3-39DD-4200-958F-A76CA8134574}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourPlanner.TestDemo", "TourPlanner.TestDemo\TourPlanner.TestDemo.csproj", "{B9DAB129-83A5-47D9-8D8B-DB7B49AD26C2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourPlanner.Test", "TourPlanner.Test\TourPlanner.Test.csproj", "{0DDA9A0F-A2CF-4E4A-8CA4-C0A29B320EE7}"
 EndProject
 Global
@@ -34,10 +32,6 @@ Global
 		{BD1E9AA3-39DD-4200-958F-A76CA8134574}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD1E9AA3-39DD-4200-958F-A76CA8134574}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD1E9AA3-39DD-4200-958F-A76CA8134574}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B9DAB129-83A5-47D9-8D8B-DB7B49AD26C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B9DAB129-83A5-47D9-8D8B-DB7B49AD26C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B9DAB129-83A5-47D9-8D8B-DB7B49AD26C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B9DAB129-83A5-47D9-8D8B-DB7B49AD26C2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0DDA9A0F-A2CF-4E4A-8CA4-C0A29B320EE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0DDA9A0F-A2CF-4E4A-8CA4-C0A29B320EE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0DDA9A0F-A2CF-4E4A-8CA4-C0A29B320EE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
