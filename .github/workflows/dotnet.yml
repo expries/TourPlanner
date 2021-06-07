@@ -2,22 +2,36 @@ name: .NET
 
 on:
   push:
+<<<<<<< HEAD
     branches: [ main, development ]
   pull_request:
     branches: [ main, development ]
+=======
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+>>>>>>> 858e407 (Created Github Actions Workflow)
 
 jobs:
   build:
 
+<<<<<<< HEAD
     runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
     
+=======
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+>>>>>>> 858e407 (Created Github Actions Workflow)
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 5.0.x
+<<<<<<< HEAD
         
     - name: Restore dependencies
       run: dotnet restore
@@ -25,5 +39,11 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
       
+=======
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+>>>>>>> 858e407 (Created Github Actions Workflow)
     - name: Test
       run: dotnet test --no-build --verbosity normal
