@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net5.0;net5.0-windows</TargetFrameworks>
         <LangVersion>latestmajor</LangVersion>
+        <TargetFramework>net5.0-windows</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
