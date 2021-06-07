@@ -10,7 +10,7 @@ CREATE TABLE tour (
     tourType tour_type NOT NULL,
     distance FLOAT NOT NULL,
     description VARCHAR NOT NULL,
-    imagePath VARCHAR NOT NULL DEFAULT 'C:\Users\Samuel\Documents\TourPlanner-Images\example.png'
+    imagePath VARCHAR NOT NULL
 );
 
 CREATE TABLE tour_log (

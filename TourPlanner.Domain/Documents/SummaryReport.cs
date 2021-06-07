@@ -38,13 +38,22 @@ namespace TourPlanner.Domain.Documents
         {
             container.Stack(stack =>
             {
+                int tourCount = this.Model.Count;
+                int tourLogCount = this.Model.Sum(tour => tour.TourLogs.Value.Count);
+                double averagePace = this.Model.Average(tour => tour.TourLogs.Value.Sum(log => log.AverageSpeed));
+                double totalDistance = this.Model.Sum(tour => tour.TourLogs.Value.Sum(log => log.Distance));
+                double totalDuration = this.Model.Sum(tour => tour.TourLogs.Value.Sum(log => log.Duration));
+
                 stack.Item().Text("Tour-Summary Report", TextStyle.Default.Size(18));
                 stack.Item().PaddingTop(10);
-                stack.Item().Text($"Touren: {this.Model.Count}");
-                stack.Item().Text($"Tourlogs: {this.Model.Sum(tour => tour.TourLogs.Value.Count)}");
+                stack.Item().Text($"Touren: {tourCount}");
+                stack.Item().Text($"Tourlogs: {tourLogCount}");
+                stack.Item().Text($"Gesamtdistanz: {totalDistance}km");
+                stack.Item().Text($"Gesamtdauer: {totalDuration}h");
+                stack.Item().Text($"Durchschnittsgeschwindigkeit: {averagePace}km/h");
                 
                 stack.Item().PaddingTop(15);
-                stack.Item().Text("Tourübersicht", TextStyle.Default.Size(16));
+                stack.Item().Text("TourÃ¼bersicht", TextStyle.Default.Size(16));
                 stack.Item().PaddingTop(5);
 
                 stack.Item().BorderBottom(1).Padding(5).Row(row =>
@@ -119,7 +128,7 @@ namespace TourPlanner.Domain.Documents
                 }
                 
                 outerStack.Item().PaddingTop(15);
-                outerStack.Item().Text("Toureinträge", TextStyle.Default.Size(14));
+                outerStack.Item().Text("ToureintrÃ¤ge", TextStyle.Default.Size(14));
                 outerStack.Item().PaddingTop(10);
 
                 outerStack.Item().BorderBottom(1).Padding(5).Row(row =>
@@ -132,7 +141,7 @@ namespace TourPlanner.Domain.Documents
                     row.RelativeColumn().Text("Difficulty");
                     row.RelativeColumn().Text("Schwierigk");
                     row.RelativeColumn().Text("Wetter");
-                    row.RelativeColumn().Text("C°");
+                    row.RelativeColumn().Text("CÂ°");
                 });
                 
                 foreach (var log in tour.TourLogs.Value)

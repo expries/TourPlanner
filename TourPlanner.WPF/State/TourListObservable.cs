@@ -32,9 +32,10 @@ namespace TourPlanner.WPF.State
 
         public void Save(Tour tour)
         {
-            var newTours = this._tours.FindAll(x => x.TourId != tour.TourId);
-            newTours.Add(tour);
-            Update(newTours);
+            var tours = this._tours;
+            tours.RemoveAll(x => x.TourId == tour.TourId);
+            tours.Add(tour);
+            Update(tours);
         }
 
         private void Notify()

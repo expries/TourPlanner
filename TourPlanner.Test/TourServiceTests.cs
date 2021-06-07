@@ -100,8 +100,8 @@ namespace TourPlanner.Test
         public void Test_FindTours_WhenTourHasMatchingLog_ReturnThatTour()
         {
             // arrange
-            var tourLogA = new TourLog {TourLogId = 1, Description = "TourLogA"}; 
-            var tourLogB = new TourLog {TourLogId = 2, Description = "TourLogB"};
+            var tourLogA = new TourLog {TourLogId = 1, Weather = WeatherCondition.Cloudy}; 
+            var tourLogB = new TourLog {TourLogId = 2, Weather = WeatherCondition.Rainy};
             
             var tourA = new Tour
             {
@@ -124,7 +124,7 @@ namespace TourPlanner.Test
                 .Returns(tourList);
 
             // act
-            var tours = this._tourService.FindTours(tourLogA.Description);
+            var tours = this._tourService.FindTours(tourLogA.Weather.ToString());
 
             // assert
             Assert.Contains(tourA, tours);

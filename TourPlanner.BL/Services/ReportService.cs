@@ -71,7 +71,7 @@ namespace TourPlanner.BL.Services
                 if (string.IsNullOrEmpty(filePath))
                 {
                     Log.Error("Received empty file path for summary report creation.");
-                    throw new BusinessException("Can't save summary report to empty path.");
+                    throw new BusinessException("Kann den Summary-Report nicht in einem leeren Pfad speichern.");
                 }
 
                 var tours = this._tourRepository.GetAll();

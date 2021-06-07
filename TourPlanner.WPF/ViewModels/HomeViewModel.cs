@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -170,8 +171,10 @@ namespace TourPlanner.WPF.ViewModels
             {
                 Log.Debug("Delete tour was triggered");
                 await this._tourService.DeleteTourAsync(this.CurrentTour);
+                
+                var tours = this.TourList.Where(x => x.TourId != this.CurrentTour.TourId).ToList();
+                this._tourListObservable.Update(tours);
                 this.CurrentTour = null;
-                LoadTours();
             }
             catch (BusinessException ex)
             {
@@ -211,6 +214,8 @@ namespace TourPlanner.WPF.ViewModels
             
                 await this._tourService.DeleteTourLogAsync(tourLog);
                 this.CurrentTour.TourLogs.Value.RemoveAll(x => x.TourLogId == tourLog.TourLogId);
+                this._tourListObservable.Save(this.CurrentTour);
+
                 var tour = this.CurrentTour;
                 this.CurrentTour = null;
                 this.CurrentTour = tour;

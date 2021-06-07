@@ -29,8 +29,12 @@ namespace TourPlanner.DAL.Repositories
         public DirectionResponse Get(string locationFrom, string locationTo)
         {
             string url = $"{this._baseUrl}/directions/v2/route?key={this._apiKey}";
-            var request = new DirectionRequest();
-            request.Locations = new List<string> { locationFrom, locationTo };
+            
+            var request = new DirectionRequest
+            {
+                Locations = new List<string> {locationFrom, locationTo}  // start and endpoint 
+            };
+            
             var response = HttpConnection.Post<DirectionResponse>(url, request);
             return response;
         }

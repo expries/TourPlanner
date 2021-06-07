@@ -91,7 +91,6 @@ namespace TourPlanner.BL.Services
             try
             {
                 Log.Debug($"Searching for tours with query '{query}'");
-                
                 var tours = this._tourRepository.GetAll();
 
                 if (string.IsNullOrWhiteSpace(query))
@@ -99,38 +98,9 @@ namespace TourPlanner.BL.Services
                     return tours;
                 }
 
-                query = query.ToLower();
-
-                tours = tours.FindAll(tour =>
-                {
-                    var tourMatches = new List<bool>
-                    {
-                        tour.From.ToLower().Contains(query),
-                        tour.To.ToLower().Contains(query),
-                        tour.Name.ToLower().Contains(query),
-                        tour.Description.ToLower().Contains(query),
-                    };
-                        
-                    var logMatchLists = tour.TourLogs.Value.Select(tourLog => new List<bool>
-                    {
-                        tourLog.Date.ToString().ToLower().Contains(query),
-                        tourLog.Difficulty.ToString().ToLower().Contains(query),
-                        tourLog.Description.ToLower().Contains(query),
-                        tourLog.Distance.ToString().ToLower().Contains(query),
-                        tourLog.Duration.ToString().ToLower().Contains(query),
-                        tourLog.Rating.ToString().ToLower().Contains(query),
-                        tourLog.Temperature.ToString().ToLower().Contains(query),
-                        tourLog.Weather.ToString().ToLower().Contains(query),
-                        tourLog.AverageSpeed.ToString().ToLower().Contains(query),
-                        tourLog.DangerLevel.ToString().ToLower().Contains(query),
-                    });
-                    
-                    return tourMatches.Any(x => x) || 
-                           logMatchLists.Any(logMatches => logMatches.Any(x => x));
-                });
-                
-                Log.Debug($"Search returned {tours.Count} tours");
-                return tours;   
+                var matchingTours = tours.Where(tour => TourMatchesQuery(tour, query)).ToList();
+                Log.Debug($"Search returned {matchingTours.Count} tours");
+                return matchingTours;   
             }
             catch (DataAccessException ex)
             {
@@ -154,7 +124,7 @@ namespace TourPlanner.BL.Services
                 // query api
                 var routeResponse = this._routeRepository.Get(tour.From, tour.To);
                 var route = routeResponse.Route;
-                tour.Distance = route.Distance;
+                tour.Distance = Math.Round(route.Distance * 1.609344, 2);  // convert miles to km
 
                 if (routeResponse.Info.Statuscode != 0)
                 {
@@ -238,8 +208,6 @@ namespace TourPlanner.BL.Services
         {
             try
             {
-                
-
                 if (!File.Exists(filePath))
                 {
                     throw new BusinessException("Datei für den Tour-Import konnte nicht gefunden werden.");
@@ -296,6 +264,30 @@ namespace TourPlanner.BL.Services
                 tourLog.Tour = new Lazy<Tour>(() => tour);
                 this._tourLogRepository.Save(tourLog);
             });
+        }
+
+        private bool TourMatchesQuery(Tour tour, string query)
+        {
+            query = query.ToLower();
+            
+            bool tourMatches = tour.From.ToLower().Contains(query) ||
+                               tour.To.ToLower().Contains(query) ||
+                               tour.Name.ToLower().Contains(query) ||
+                               tour.Description.ToLower().Contains(query);
+                        
+            bool logsMatching = tour.TourLogs?.Value?.Any(tourLog =>
+                $"{tourLog.Date.Day}.{tourLog.Date.Month}.{tourLog.Date.Year}".Contains(query) ||
+                tourLog.Difficulty.ToString().ToLower().Contains(query) ||
+                tourLog.Distance.ToString().ToLower().Contains(query) ||
+                tourLog.Duration.ToString().ToLower().Contains(query) ||
+                tourLog.Rating.ToString().ToLower().Contains(query) ||
+                tourLog.Temperature.ToString().ToLower().Contains(query) ||
+                tourLog.Weather.ToString().ToLower().Contains(query) ||
+                tourLog.AverageSpeed.ToString().ToLower().Contains(query) ||
+                tourLog.DangerLevel.ToString().ToLower().Contains(query)
+            ) ?? false;
+            
+            return tourMatches || logsMatching;
         }
     }
 }

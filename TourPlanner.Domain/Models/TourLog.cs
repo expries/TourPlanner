@@ -10,9 +10,6 @@ namespace TourPlanner.Domain.Models
         
         [Column(Name="date")]
         public DateTime Date { get; set; }
-        
-        [Column(Name="description")]
-        public string Description { get; set; }
 
         [Column(Name="duration")]
         public double Duration { get; set; }

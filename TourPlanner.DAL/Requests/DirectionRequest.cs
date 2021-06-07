@@ -41,6 +41,12 @@ namespace TourPlanner.DAL.Requests
         [JsonProperty("highwayEfficiency")]
         public double HighwayEfficiency { get; set; }
     }
+    
+    public class DirectionRequestOptionsShort
+    {
+        [JsonProperty("unit")]
+        public string Unit { get; set; }
+    }
 
     public class DirectionRequest
     {
@@ -49,5 +55,14 @@ namespace TourPlanner.DAL.Requests
 
         [JsonProperty("options")]
         public DirectionRequestOptions Options { get; set; }
+    }
+    
+    public class DirectionRequestShort
+    {
+        [JsonProperty("locations")]
+        public List<string> Locations { get; set; }
+
+        [JsonProperty("options")]
+        public DirectionRequestOptionsShort Options { get; set; }
     }
 }
