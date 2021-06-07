@@ -4,6 +4,7 @@ using Moq;
 using NUnit.Framework;
 using TourPlanner.BL.Services;
 using TourPlanner.Domain.Models;
+using TourPlanner.WPF.State;
 using TourPlanner.WPF.ViewModels;
 
 namespace TourPlanner.Test
@@ -14,14 +15,31 @@ namespace TourPlanner.Test
         private NewTourLogViewModel _model;
 
         private Mock<ITourService> _tourServiceMock;
+        
+        private Mock<ITourListObservable> _tourListObeservableMock;
 
+        [OneTimeSetUp]
+        public void SetupNavigator()
+        {
+            var navigatorMock = new Mock<INavigator>();
+            
+            navigatorMock.Setup(navigator => navigator.UpdateCurrentViewModel(It.IsAny<ViewType>()));
+            navigatorMock.Setup(navigator => navigator.UpdateCurrentViewModel(
+                It.IsAny<ViewType>(), 
+                It.IsAny<object>()));
+
+            Navigator.Instance = navigatorMock.Object;
+        }
+        
         [SetUp]
         public void Setup()
         {
             this._tourServiceMock = new Mock<ITourService>();
-            this._model = new NewTourLogViewModel(this._tourServiceMock.Object);
+            this._tourListObeservableMock = new Mock<ITourListObservable>();
+            this._model = new NewTourLogViewModel(this._tourServiceMock.Object, this._tourListObeservableMock.Object);
+            
             var tour = new Tour();
-            this._model.OnNavigation(tour);
+            this._model.Accept(tour);
         }
 
         [Test]

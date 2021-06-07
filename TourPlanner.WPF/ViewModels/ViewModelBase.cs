@@ -8,9 +8,11 @@ namespace TourPlanner.WPF.ViewModels
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public virtual object Context { get; set; }
-
-        public virtual void OnNavigation(object context)
+        public virtual void Accept(object context)
+        {
+        }
+        
+        public virtual void Accept()
         {
         }
 

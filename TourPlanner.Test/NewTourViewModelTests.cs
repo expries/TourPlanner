@@ -1,8 +1,11 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Moq;
 using NUnit.Framework;
 using TourPlanner.BL.Services;
 using TourPlanner.Domain.Models;
+using TourPlanner.WPF.State;
 using TourPlanner.WPF.ViewModels;
 
 namespace TourPlanner.Test
@@ -15,13 +18,41 @@ namespace TourPlanner.Test
         private Mock<ITourService> _tourServiceMock;
         
         private Mock<IMapService> _mapServiceMock;
+        
+        private Mock<ITourListObservable> _tourListObeservableMock;
 
+        [OneTimeSetUp]
+        public void SetupNavigator()
+        {
+            var navigatorMock = new Mock<INavigator>();
+            
+            navigatorMock.Setup(navigator => navigator.UpdateCurrentViewModel(It.IsAny<ViewType>()));
+            navigatorMock.Setup(navigator => navigator.UpdateCurrentViewModel(
+                It.IsAny<ViewType>(), 
+                It.IsAny<object>()));
+
+            Navigator.Instance = navigatorMock.Object;
+        }
+        
         [SetUp]
         public void Setup()
         {
             this._tourServiceMock = new Mock<ITourService>();
             this._mapServiceMock = new Mock<IMapService>();
-            this._model = new NewTourViewModel(this._mapServiceMock.Object, this._tourServiceMock.Object);
+            this._tourListObeservableMock = new Mock<ITourListObservable>();
+
+            var response = new List<List<Location>>();
+            var taskResponse = new Task<List<List<Location>>>(() => response);
+
+            this._mapServiceMock
+                .Setup(service => service.FindLocationsAsync(
+                    It.IsAny<string>(), 
+                    It.IsAny<string>())
+                )
+                .Returns(taskResponse);
+            
+            this._model = new NewTourViewModel(
+                this._mapServiceMock.Object, this._tourServiceMock.Object, this._tourListObeservableMock.Object);
         }
         
         [Test]

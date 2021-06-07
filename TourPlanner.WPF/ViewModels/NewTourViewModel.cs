@@ -16,6 +16,8 @@ namespace TourPlanner.WPF.ViewModels
 
         private ITourService TourService { get; }
 
+        private readonly ITourListObservable _tourListObservable;
+
         private bool _locationLoadingInProgress;
 
         private bool _tourSaveInProgress;
@@ -148,28 +150,29 @@ namespace TourPlanner.WPF.ViewModels
         
         public ICommand LoadRouteCommand { get; }
 
-        public NewTourViewModel(IMapService mapService, ITourService tourService)
+        public NewTourViewModel(IMapService mapService, ITourService tourService, ITourListObservable tourListObservable)
         {
             this.MapService = mapService;
             this.TourService = tourService;
+            this._tourListObservable = tourListObservable;
 
             this.LoadRouteCommand = new RelayCommand(LoadRoute, LoadRouteCanExecute);
             this.SaveTourCommand = new RelayCommand(SaveTour, SaveTourCanExecute);
         }
 
-        public override void OnNavigation(object context)
+        public override void Accept()
         {
-            if (context is not Tour tour)
-            {
-                tour = new Tour();
-            }
-            
+            var tour = new Tour();
+            Accept(tour);
+        }
+        
+        public void Accept(Tour tour)
+        {
             this.FromQuery = tour.From;
             this.ToQuery = tour.To;
             this.FromSuggestions = new List<string> { tour.From };
             this.ToSuggestions = new List<string> { tour.To };
             this._tour = tour;
-            
             ClearValidationErrors();
         }
 
@@ -237,10 +240,9 @@ namespace TourPlanner.WPF.ViewModels
                 this._tourSaveInProgress = true;
                 var newTour = await this.TourService.SaveTourAsync(this._tour);
                 this._tourSaveInProgress = false;
-            
-                this.Context = newTour;
-                Navigator.Instance.UpdateCurrentViewModelCommand.Execute(ViewType.Home);
-                this.Context = null;
+                
+                this._tourListObservable.Save(newTour);
+                Navigator.Instance.UpdateCurrentViewModel(ViewType.Home, newTour);
             }
             catch (BusinessException ex)
             {

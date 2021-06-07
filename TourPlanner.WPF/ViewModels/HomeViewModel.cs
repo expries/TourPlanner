@@ -23,6 +23,8 @@ namespace TourPlanner.WPF.ViewModels
 
         private readonly IReportService _reportService;
 
+        private readonly ITourListObservable _tourListObservable;
+
         // backing fields
 
         private string _searchText = string.Empty;
@@ -31,13 +33,13 @@ namespace TourPlanner.WPF.ViewModels
 
         private readonly Image _image = new Image();
         
-        private bool TourIsSelected => this._currentTour != null;
+        private bool TourIsSelected => this._currentTour is not null;
 
         private List<Tour> _tourList = new List<Tour>();
 
         // public properties
         
-        public INavigator Navigator => State.Navigator.Instance;
+        public static INavigator Navigator => State.Navigator.Instance;
 
         public ImageSource Image
         {
@@ -102,10 +104,13 @@ namespace TourPlanner.WPF.ViewModels
         
         public ICommand ImportToursCommand { get; }
 
-        public HomeViewModel(ITourService tourService, IReportService reportService)
+        public HomeViewModel(ITourService tourService, IReportService reportService, 
+                             ITourListObservable tourListObservable)
         {
             this._tourService = tourService;
             this._reportService = reportService;
+            this._tourListObservable = tourListObservable;
+            this._tourListObservable.Subscribe(tourList => this.TourList = tourList);
 
             this.SelectTourCommand = new RelayCommand(SelectTour);
             this.DeleteCurrentTourCommand = new RelayCommand(DeleteTour, _ => this.TourIsSelected);
@@ -119,13 +124,14 @@ namespace TourPlanner.WPF.ViewModels
             this.CreateSummaryReportCommand = new RelayCommand(CreateSummaryReport);
             this.ExportToursCommand = new RelayCommand(ExportTours);
             this.ImportToursCommand = new RelayCommand(ImportTours);
+
+            LoadTours();
         }
 
-        public override void OnNavigation(object context)
+        public void Accept(Tour tour)
         {
             this._searchText = string.Empty;
-            LoadTours();
-            SelectTour(context);
+            SelectTour(tour);
         }
 
         private void SearchTour(string parameter)
@@ -155,9 +161,7 @@ namespace TourPlanner.WPF.ViewModels
 
         private void UpdateCurrentTour(object parameter)
         {
-            this.Context = this.CurrentTour;
-            this.Navigator.UpdateCurrentViewModelCommand.Execute(ViewType.NewTour);
-            this.Context = null;
+            Navigator.UpdateCurrentViewModel(ViewType.NewTour, this.CurrentTour);
         }
 
         private async void DeleteTour(object parameter)
@@ -229,9 +233,7 @@ namespace TourPlanner.WPF.ViewModels
                 }
 
                 tourLog.Tour = new Lazy<Tour>(this.CurrentTour);
-                this.Context = tourLog;
-                this.Navigator.UpdateCurrentViewModelCommand.Execute(ViewType.NewTourLog);
-                this.Context = null;   
+                Navigator.UpdateCurrentViewModel(ViewType.NewTourLog, tourLog);
             }
             catch (BusinessException ex)
             {
@@ -242,9 +244,7 @@ namespace TourPlanner.WPF.ViewModels
         private void CreateTourLog(object parameter)
         {
             Log.Debug("Create tour log was triggered.");
-            this.Context = this.CurrentTour;
-            this.Navigator.UpdateCurrentViewModelCommand.Execute(ViewType.NewTourLog);
-            this.Context = null;
+            Navigator.UpdateCurrentViewModel(ViewType.NewTourLog, this.CurrentTour);
         }
         
         private void CreateSummaryReport(object parameter)
@@ -305,7 +305,8 @@ namespace TourPlanner.WPF.ViewModels
         {
             try
             {
-                this.TourList = await this._tourService.GetToursAsync();
+                var tours = await this._tourService.GetToursAsync();
+                this._tourListObservable.Update(tours);
             }
             catch (BusinessException ex)
             {

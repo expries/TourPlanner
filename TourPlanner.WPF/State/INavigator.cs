@@ -7,6 +7,10 @@ namespace TourPlanner.WPF.State
     {
         public ViewModelBase CurrentViewModel { get; }
 
-        ICommand UpdateCurrentViewModelCommand { get; }
+        public ICommand UpdateCurrentViewModelCommand { get; }
+        
+        public void UpdateCurrentViewModel(ViewType viewType);
+
+        public void UpdateCurrentViewModel(ViewType viewType, object context);
     }
 }
