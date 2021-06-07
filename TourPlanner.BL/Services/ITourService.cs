@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 using TourPlanner.Domain.Models;
 
@@ -31,8 +32,8 @@ namespace TourPlanner.BL.Services
 
         public void DeleteTourLog(TourLog tourLog);
 
-        public List<Tour> ImportTours();
+        public List<Tour> ImportTours(string filePath);
 
-        public void ExportTours();
+        public void ExportTours(string filePath);
     }
 }

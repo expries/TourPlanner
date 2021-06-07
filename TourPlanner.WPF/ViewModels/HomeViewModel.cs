@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Microsoft.Win32;
 using TourPlanner.BL.Services;
 using TourPlanner.Domain.Exceptions;
 using TourPlanner.WPF.State;
@@ -179,7 +180,13 @@ namespace TourPlanner.WPF.ViewModels
             try
             {
                 Log.Debug("Create report was triggered.");
-                this._reportService.CreateTourReport(this.CurrentTour);
+                var saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "Pdf|*.pdf";
+                saveFileDialog.Title = "Speicherort für den Tourreport auswählen ...";
+                saveFileDialog.ShowDialog();
+
+                string filePath = saveFileDialog.FileName;
+                this._reportService.CreateTourReport(this.CurrentTour, filePath);
             }
             catch (BusinessException ex)
             {
@@ -244,7 +251,13 @@ namespace TourPlanner.WPF.ViewModels
         {
             try
             {
-                this._reportService.CreateSummaryReport();
+                var saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "Pdf|*.pdf";
+                saveFileDialog.Title = "Speicherort für den Tourreport auswählen ...";
+                saveFileDialog.ShowDialog();
+
+                string filePath = saveFileDialog.FileName;
+                this._reportService.CreateSummaryReport(filePath);
             }
             catch (BusinessException ex)
             {
@@ -256,7 +269,13 @@ namespace TourPlanner.WPF.ViewModels
         {
             try
             {
-                this._tourService.ExportTours();
+                var saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Title = "Wähle aus, wohin der Tour-Export gespeichert werden soll ...";
+                saveFileDialog.Filter = "JSON|*.json";
+                saveFileDialog.ShowDialog();
+                
+                string filePath = saveFileDialog.FileName;
+                this._tourService.ExportTours(filePath);
             }
             catch (BusinessException ex)
             {
@@ -268,7 +287,13 @@ namespace TourPlanner.WPF.ViewModels
         {
             try
             {
-                this.TourList = this._tourService.ImportTours();
+                var openFileDialog = new OpenFileDialog();
+                openFileDialog.Title = "Wähle eine Datei für den Tour-Import aus ...";
+                openFileDialog.Filter = "JSON|*.json";
+                openFileDialog.ShowDialog();
+
+                string filePath = openFileDialog.FileName;
+                this.TourList = this._tourService.ImportTours(filePath);
             }
             catch (BusinessException ex)
             {

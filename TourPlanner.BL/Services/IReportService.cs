@@ -5,12 +5,12 @@ namespace TourPlanner.BL.Services
 {
     public interface IReportService
     {
-        public Task CreateTourReportAsync(Tour tour);
+        public Task CreateTourReportAsync(Tour tour, string filePath);
 
-        public void CreateTourReport(Tour tour);
+        public void CreateTourReport(Tour tour, string filePath);
 
-        public Task CreateSummaryReportAsync();
+        public Task CreateSummaryReportAsync(string filePath);
 
-        public void CreateSummaryReport();
+        public void CreateSummaryReport(string filePath);
     }
 }

@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Win32;
 using Newtonsoft.Json;
 using TourPlanner.DAL.Repositories;
 using TourPlanner.Domain.Exceptions;
@@ -64,14 +63,14 @@ namespace TourPlanner.BL.Services
             return Task.Run(() => DeleteTourLog(tourLog));
         }
 
-        public Task<List<Tour>> ImportToursAsync()
+        public Task<List<Tour>> ImportToursAsync(string filePath)
         {
-            return Task.Run(ImportTours);
+            return Task.Run(() => ImportTours(filePath));
         }
 
-        public Task ExportToursAsync()
+        public Task ExportToursAsync(string filePath)
         {
-            return Task.Run(ExportTours);
+            return Task.Run(() => ExportTours(filePath));
         }
 
         public List<Tour> GetTours()
@@ -235,16 +234,11 @@ namespace TourPlanner.BL.Services
             }
         }
 
-        public List<Tour> ImportTours()
+        public List<Tour> ImportTours(string filePath)
         {
             try
             {
-                var openFileDialog = new OpenFileDialog();
-                openFileDialog.Title = "Wähle eine Datei für den Tour-Import aus ...";
-                openFileDialog.Filter = "JSON|*.json";
-                openFileDialog.ShowDialog();
-
-                string filePath = openFileDialog.FileName;
+                
 
                 if (!File.Exists(filePath))
                 {
@@ -269,20 +263,14 @@ namespace TourPlanner.BL.Services
             }
         }
 
-        public void ExportTours()
+        public void ExportTours(string filePath)
         {
             try
             {
-                var saveFileDialog = new SaveFileDialog();
-                saveFileDialog.Title = "Wähle aus, wohin der Tour-Export gespeichert werden soll ...";
-                saveFileDialog.Filter = "JSON|*.json";
-                saveFileDialog.ShowDialog();
-
                 var tours = this._tourRepository.GetAll();
                 string toursJson = JsonConvert.SerializeObject(tours);
-                string fileName = saveFileDialog.FileName;
 
-                File.WriteAllText(fileName, toursJson);
+                File.WriteAllText(filePath, toursJson);
             }
             catch (DataAccessException ex)
             {

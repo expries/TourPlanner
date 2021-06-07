@@ -2,7 +2,6 @@
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Win32;
 using QuestPDF.Fluent;
 using TourPlanner.DAL.Repositories;
 using TourPlanner.Domain.Documents;
@@ -23,17 +22,17 @@ namespace TourPlanner.BL.Services
             this._tourRepository = tourRepository;
         }
         
-        public Task CreateTourReportAsync(Tour tour)
+        public Task CreateTourReportAsync(Tour tour, string filePath)
         {
-            return Task.Run(() => CreateTourReport(tour));
+            return Task.Run(() => CreateTourReport(tour, filePath));
         }
         
-        public Task CreateSummaryReportAsync()
+        public Task CreateSummaryReportAsync(string filePath)
         {
-            return Task.Run(CreateSummaryReport);
+            return Task.Run(() => CreateSummaryReport(filePath));
         }
 
-        public void CreateTourReport(Tour tour)
+        public void CreateTourReport(Tour tour, string filePath)
         {
             try
             {
@@ -44,13 +43,6 @@ namespace TourPlanner.BL.Services
                     Log.Error("Can't create tour report for tour that does not exist.");
                     throw new BusinessException("Fehler beim Erstellen des Tour-Reports: Es gibt die ausgewählte Tour nicht mehr.");
                 }
-
-                var saveFileDialog = new SaveFileDialog();
-                saveFileDialog.Filter = "Pdf|*.pdf";
-                saveFileDialog.Title = "Speicherort für den Tourreport auswählen ...";
-                saveFileDialog.ShowDialog();
-
-                string filePath = saveFileDialog.FileName;
 
                 if (string.IsNullOrEmpty(filePath))
                 {
@@ -70,18 +62,11 @@ namespace TourPlanner.BL.Services
             
         }
 
-        public void CreateSummaryReport()
+        public void CreateSummaryReport(string filePath)
         {
             try
             {
-                Log.Debug("Creating summary report: Opening save file dialog ...");
-
-                var saveFileDialog = new SaveFileDialog();
-                saveFileDialog.Filter = "Pdf|*.pdf";
-                saveFileDialog.Title = "Speicherort für den Tourreport auswählen ...";
-                saveFileDialog.ShowDialog();
-
-                string filePath = saveFileDialog.FileName;
+                Log.Debug("Creating summary report ...");
 
                 if (string.IsNullOrEmpty(filePath))
                 {
